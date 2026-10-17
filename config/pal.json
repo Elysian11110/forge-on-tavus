@@ -1,6 +1,6 @@
 {
   "_setup": {
-    "read_by": "scripts/setup-tavus.ts removes this block; everything else in this file is the POST /v2/pals body",
+    "read_by": "scripts/setup-tavus.ts removes this block and _skills; everything else in this file is the POST /v2/pals body",
     "system_prompt_from": "config/forge-system-prompt.md",
     "guardrail_from": "config/guardrail.json",
     "tools_from": "config/tools.json",
@@ -16,6 +16,7 @@
   "verbal_disclosure": "Quick heads up, I'm an AI!",
   "visual_disclosure": "You're talking with Veronica, an AI that reads expressions and tone to pace the chat, never to decide your type.",
   "guardrail_ids": [],
+  "_skills": { "internet_search": {} },
   "layers": {
     "llm": {
       "model": "tavus-gemma-4"

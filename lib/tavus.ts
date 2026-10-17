@@ -91,7 +91,7 @@ interface TavusReply {
 }
 
 /** One request to tavusapi.com; throws TavusError(0) when the key is missing or Tavus cannot be reached. */
-async function send(method: "GET" | "POST" | "PATCH" | "DELETE", path: string, body?: unknown): Promise<TavusReply> {
+async function send(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", path: string, body?: unknown): Promise<TavusReply> {
   const key = process.env.TAVUS_API_KEY?.trim();
   if (!key) throw new TavusError(0, "TAVUS_API_KEY is not set");
   const url = URL.parse(`${TAVUS_API_BASE}${path}`);
@@ -138,7 +138,7 @@ function errorMessage(reply: TavusReply): string {
 
 /** One request with the key; throws TavusError on a non-2xx reply; an empty body resolves to null. */
 export async function tavusRequest<T>(
-  method: "GET" | "POST" | "PATCH" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<T> {

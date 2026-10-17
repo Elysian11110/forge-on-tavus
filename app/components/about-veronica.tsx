@@ -57,7 +57,7 @@ export function AboutVeronica() {
               was, then about real moments, and she works out how you take things in and how you decide using Forge&apos;s
               method. Tavus is the reason it feels like talking to a person and not filling in a form. She notices when you
               light up or go quiet, she lets you finish your story, and people tell a face things they&apos;d never type into
-              a quiz <span aria-hidden>🙂</span>
+              a quiz.
             </p>
             <p>She&apos;s a friend, not a therapist: no diagnoses, and a real crisis line if something heavy comes up.</p>
             <p>

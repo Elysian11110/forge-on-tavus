@@ -28,6 +28,8 @@ interface PalReadBack {
 // The POST /v2/pals body, with the _setup block that only this script reads.
 interface PalConfig {
   _setup?: { attach_tools?: ToolName[] };
+  /** Built-in Tavus skills to attach after create, keyed by skill id. */
+  _skills?: Record<string, Record<string, unknown>>;
   guardrail_ids?: string[];
   layers?: Record<string, unknown>;
   [field: string]: unknown;
@@ -136,7 +138,7 @@ async function createPronunciation(ids: Ids): Promise<void> {
 
 /** Builds the PAL from config/pal.json with the prompt read in and the guardrail attached, creates it, then attaches both tools. */
 async function createPal(ids: Ids): Promise<string> {
-  const { _setup: setup, ...palConfig } = readConfig("pal.json") as PalConfig;
+  const { _setup: setup, _skills: skills = {}, ...palConfig } = readConfig("pal.json") as PalConfig;
   const toolIds = (setup?.attach_tools ?? TOOL_NAMES).map((name) => ids[name]);
   if (!ids.guardrail || !ids.objectives_open || !ids.pronunciation || toolIds.some((id) => !id)) {
     throw new Error("A guardrail, objectives, pronunciation or tool id is missing from config/ids.json");
@@ -155,6 +157,9 @@ async function createPal(ids: Ids): Promise<string> {
   } catch (error) {
     console.error(`PAL ${created.pal_id} exists but the tools did not attach: attach them by hand, or delete that PAL before re-running.`);
     throw error;
+  }
+  for (const [skillId, config] of Object.entries(skills)) {
+    await tavusRequest("PUT", `/pals/${created.pal_id}/skills/${skillId}`, { config });
   }
   saveId(ids, "pal", created.pal_id);
   return created.pal_id;
