@@ -77,7 +77,11 @@ Six decisions, each with its trade-off.
 
 6. Rules in the prompt, no knowledge base, only the CC BY text shipped. The method is about 2,900 tokens of system prompt, and the corpus file holds only the 16 TRC rows, short glosses and label words. Trade-off: no retrieval, and two of my corpora stay out of the repo, in return for rules that apply on every turn, about 150 tokens under Tavus's 5,000-token guidance.
 
-The PAL pins `sparrow-2` (many stock PALs still carry the deprecated sparrow-1) and `raven-1`, with one guardrail, `crisis_self_harm`. The LLM is `tavus-gemma-4`, which Tavus rates its fastest and most natural and recommends for emotional expression, on a Pro stock face that shows emotion on its own. Turn-taking patience is medium and idle engagement patient, so she lets you finish a story and gives you room to think. I started on `tavus-gpt-5.6-terra` and it felt stiff on a live call.
+The PAL pins `sparrow-2` (many stock PALs still carry the deprecated sparrow-1) and `raven-1`, with one guardrail, `crisis_self_harm`. The LLM is `tavus-gemma-4`, which Tavus rates its fastest and most natural and recommends for emotional expression, on a Pro stock face that shows emotion on its own. Turn-taking patience is medium and idle engagement patient, so she lets you finish a story and gives you room to think.
+
+The order of the call lives in Tavus Objectives (`config/objectives.json`), not in the prompt: small talk, your goal, then one step per type question that only completes once you've told a real moment that picks a side (Sensing or Intuition first, then the split inside it), then drains, the Enneagram, a bit of your life and the reveal. My first open call wrapped up after seven minutes because a passing line read like a goodbye, and objectives are the docs' answer to a model skipping steps. The speed round swaps in its own two-step set on each call.
+
+Veronica herself plays an ENFJ 2w3: she clocks how you're doing before you say it, is a little extra about helping, keeps calm and warm as her baseline and only laughs when something is funny. I tuned her voice by texting her through the Tavus MCP's text mode, which has a quirk: it never feeds her own earlier replies back to her, so it shows how she sounds turn by turn but not how a whole call flows. I started on `tavus-gpt-5.6-terra` and it felt stiff on a live call.
 
 ## What one session costs
 
@@ -126,7 +130,7 @@ You need Node 24, a Tavus API key, a public https URL Tavus can call, and a free
    - `FORGE_REQUIRE_AUTH` and `FORGE_EU_POLICY`: the two switches above.
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN` (the Vercel Marketplace names), or the `UPSTASH_REDIS_REST_` pair. With neither, a memory store runs locally and the store-backed routes answer 503 on Vercel.
    - `CORPUS_DIR` only to rebuild `lib/corpus/forge-corpus.json`, which ships built.
-3. `config/ids.json` holds my Tavus ids and only works with my key. Delete it and run `npm run setup:tavus`, which creates the guardrail, the two tools and the PAL from `config/` and writes each id as it lands. Safe to re-run, and later changes are hand-run PATCHes.
+3. `config/ids.json` holds my Tavus ids and only works with my key. Delete it and run `npm run setup:tavus`, which creates the guardrail, the two tools, the two objective sets and the PAL from `config/` and writes each id the moment it exists. Safe to re-run, and later changes are hand-run PATCHes.
 4. `npm run typecheck`, `npm test` and `npm run build`. The tests cost zero Tavus minutes: they sign the Sam fixture and call the route handler directly.
 5. Deploy to Vercel production, connect Upstash from the Marketplace, set the env, redeploy. Open the URL and say hi.
 
