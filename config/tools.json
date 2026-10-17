@@ -1,0 +1,163 @@
+[
+  {
+    "name": "save_goal",
+    "description": "Save one thing the person says they are working toward, the moment they say it. One call per goal: g1 for the first, g2 for the second, g3 for a third. If they change a goal, call again with the same goal_id. Use their words. Put your full next spoken line, your reaction plus your next question, in response_to_user. Never mention saving out loud.",
+    "origin": "llm",
+    "on_call": "generate_filler",
+    "on_resolve": "fire_and_forget",
+    "delivery": { "app_message": true },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "enum": ["g1", "g2", "g3"],
+          "description": "g1 for the first goal they name, g2 for the second, g3 for a third."
+        },
+        "goal": {
+          "type": "string",
+          "maxLength": 90,
+          "description": "The goal as a short action phrase close to their words, such as: Open my pottery shop."
+        },
+        "by_when": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "When they want it done, in their words, such as: by spring. Use not said if they did not say."
+        },
+        "user_quote": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Their exact words when they named the goal. Never paraphrase."
+        }
+      },
+      "required": ["goal_id", "goal", "by_when", "user_quote"]
+    }
+  },
+  {
+    "name": "synthesize_profile",
+    "description": "Produce the one Forge rundown at the rundown stage, from the person's own stories, the goals saved with save_goal and the rules in your instructions. Forge's server checks every piece of evidence against what they actually said, reads the other frameworks from the TRC row and writes what gets spoken, so be honest: use none, 0 or insufficient when the stories don't show it.",
+    "origin": "llm",
+    "on_call": "static_filler",
+    "static_filler": "Give me a sec, I'm putting it all together.",
+    "on_resolve": "response_in_result",
+    "delivery": {
+      "app_message": false,
+      "api": {
+        "url": "${PUBLIC_BASE_URL}/api/tools/synthesize-profile",
+        "method": "POST",
+        "auth": { "type": "hmac", "secret": "${TOOL_HMAC_SECRET}" },
+        "timeout": 20
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "trc_code": {
+          "type": "string",
+          "enum": ["RST", "RSF", "AST", "ASF", "RNT", "RNF", "ANT", "ANF", "RTS", "RTN", "ATS", "ATN", "RFS", "RFN", "AFS", "AFN", "none"],
+          "description": "The TRC row from the table in your instructions, or none when fewer than three different answers show the same lens."
+        },
+        "trc_confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low", "insufficient"]
+        },
+        "evidence": {
+          "type": "array",
+          "maxItems": 6,
+          "description": "Up to six pieces, each from one answer: three different answers that show the lens if you have them, then the tool, spark or drain, and any thought pattern that kept coming back.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pattern_id": {
+                "type": "string",
+                "enum": ["P01", "P02", "P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10", "P11", "P12", "P13", "P14"]
+              },
+              "key_words": {
+                "type": "string",
+                "maxLength": 80,
+                "description": "3 to 12 of their exact words, copied from one answer. Never paraphrase."
+              }
+            },
+            "required": ["pattern_id", "key_words"]
+          }
+        },
+        "socionics_confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low", "insufficient"]
+        },
+        "enneagram_type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9,
+          "description": "1 to 9 only if one thought pattern came back in at least two different answers; otherwise 0."
+        },
+        "enneagram_instinct": {
+          "type": "string",
+          "enum": ["self_preservative", "social", "sexual", "undetermined"]
+        },
+        "enneagram_confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low", "insufficient"]
+        },
+        "how_you_work": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "1 or 2 short spoken sentences in second person: how they take things in and how they act on it, shown through their own stories. Plain words, no codes, no framework names, no quotation marks. If no type can be called, describe the patterns you saw."
+        },
+        "goals": {
+          "type": "array",
+          "maxItems": 3,
+          "description": "One entry per goal saved with save_goal.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "goal_id": { "type": "string", "enum": ["g1", "g2", "g3"] },
+              "goal_short": {
+                "type": "string",
+                "maxLength": 60,
+                "description": "The goal as a short noun phrase for speech, such as: the pottery shop."
+              },
+              "strength_anchor": {
+                "type": "string",
+                "enum": ["lens", "tool", "P01", "P02", "P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10"]
+              },
+              "strength_line": {
+                "type": "string",
+                "maxLength": 110,
+                "description": "One spoken sentence: the edge they have for this goal, shown through their own stories."
+              },
+              "blind_spot_anchor": {
+                "type": "string",
+                "enum": ["drain", "enneagram_trap", "P14"]
+              },
+              "blind_spot_line": {
+                "type": "string",
+                "maxLength": 110,
+                "description": "One spoken sentence: what to watch for on this goal, kind and concrete, never a verdict."
+              },
+              "moves": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": { "type": "string", "enum": ["lean_on", "guard", "refuel", "bring_in"] },
+                    "move": {
+                      "type": "string",
+                      "maxLength": 100,
+                      "description": "One small concrete step for this week or month, built from their own words."
+                    }
+                  },
+                  "required": ["kind", "move"]
+                }
+              }
+            },
+            "required": ["goal_id", "goal_short", "strength_anchor", "strength_line", "blind_spot_anchor", "blind_spot_line", "moves"]
+          }
+        }
+      },
+      "required": ["trc_code", "trc_confidence", "evidence", "socionics_confidence", "enneagram_type", "enneagram_instinct", "enneagram_confidence", "how_you_work", "goals"]
+    }
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "guardrail_name": "crisis_self_harm",
+  "guardrail_prompt": "User mentions suicide, wanting to die, hurting themselves or hurting someone else, and means it literally, not as a figure of speech such as this job is killing me",
+  "modality": "verbal",
+  "app_message": true,
+  "tags": ["forge_safety"]
+}

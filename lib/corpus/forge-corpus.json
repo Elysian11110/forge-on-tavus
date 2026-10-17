@@ -1,0 +1,438 @@
+{
+  "about": "Built by scripts/build-corpus.ts from the source corpus and config/forge-system-prompt.md; do not edit by hand. Holds only what v1 publishes: TRC rows and text (CC BY 4.0), plain-words glosses, quadras, Enneagram label words and the pattern list.",
+  "credit": {
+    "trc": {
+      "title": "Temporal Reference Cognition (TRC)",
+      "author": "Gourav Kumar Mallick",
+      "affiliation": "Parul University",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "notice": "The TRC rows, function taglines and stack definitions come from Temporal Reference Cognition by Gourav Kumar Mallick (Parul University), licensed CC BY 4.0. The plain-words glosses and template wording are Forge's own, not part of TRC."
+    }
+  },
+  "trc_rows": [
+    {
+      "code": "RST",
+      "callsign": "Tradition",
+      "lens": "Si",
+      "tool": "Te",
+      "spark": "Fi",
+      "drain": "Ne",
+      "jungian": "ISTJ",
+      "socionics": "SLI",
+      "quadra": "Delta"
+    },
+    {
+      "code": "RSF",
+      "callsign": "Nostalgia",
+      "lens": "Si",
+      "tool": "Fe",
+      "spark": "Ti",
+      "drain": "Ne",
+      "jungian": "ISFJ",
+      "socionics": "SEI",
+      "quadra": "Alpha"
+    },
+    {
+      "code": "AST",
+      "callsign": "Experiment",
+      "lens": "Se",
+      "tool": "Ti",
+      "spark": "Fe",
+      "drain": "Ni",
+      "jungian": "ESTP",
+      "socionics": "SLE",
+      "quadra": "Beta"
+    },
+    {
+      "code": "ASF",
+      "callsign": "Energy",
+      "lens": "Se",
+      "tool": "Fi",
+      "spark": "Te",
+      "drain": "Ni",
+      "jungian": "ESFP",
+      "socionics": "SEE",
+      "quadra": "Gamma"
+    },
+    {
+      "code": "RNT",
+      "callsign": "Planning",
+      "lens": "Ni",
+      "tool": "Te",
+      "spark": "Fi",
+      "drain": "Se",
+      "jungian": "INTJ",
+      "socionics": "ILI",
+      "quadra": "Gamma"
+    },
+    {
+      "code": "RNF",
+      "callsign": "Awareness",
+      "lens": "Ni",
+      "tool": "Fe",
+      "spark": "Ti",
+      "drain": "Se",
+      "jungian": "INFJ",
+      "socionics": "IEI",
+      "quadra": "Beta"
+    },
+    {
+      "code": "ANT",
+      "callsign": "Curiosity",
+      "lens": "Ne",
+      "tool": "Ti",
+      "spark": "Fe",
+      "drain": "Si",
+      "jungian": "ENTP",
+      "socionics": "ILE",
+      "quadra": "Alpha"
+    },
+    {
+      "code": "ANF",
+      "callsign": "Dream",
+      "lens": "Ne",
+      "tool": "Fi",
+      "spark": "Te",
+      "drain": "Si",
+      "jungian": "ENFP",
+      "socionics": "IEE",
+      "quadra": "Delta"
+    },
+    {
+      "code": "RTS",
+      "callsign": "Guarding",
+      "lens": "Ti",
+      "tool": "Se",
+      "spark": "Ni",
+      "drain": "Fe",
+      "jungian": "ISTP",
+      "socionics": "LSI",
+      "quadra": "Beta"
+    },
+    {
+      "code": "RTN",
+      "callsign": "Improvement",
+      "lens": "Ti",
+      "tool": "Ne",
+      "spark": "Si",
+      "drain": "Fe",
+      "jungian": "INTP",
+      "socionics": "LII",
+      "quadra": "Alpha"
+    },
+    {
+      "code": "ATS",
+      "callsign": "Duty",
+      "lens": "Te",
+      "tool": "Si",
+      "spark": "Ne",
+      "drain": "Fi",
+      "jungian": "ESTJ",
+      "socionics": "LSE",
+      "quadra": "Delta"
+    },
+    {
+      "code": "ATN",
+      "callsign": "Mission",
+      "lens": "Te",
+      "tool": "Ni",
+      "spark": "Se",
+      "drain": "Fi",
+      "jungian": "ENTJ",
+      "socionics": "LIE",
+      "quadra": "Gamma"
+    },
+    {
+      "code": "RFS",
+      "callsign": "Protection",
+      "lens": "Fi",
+      "tool": "Se",
+      "spark": "Ni",
+      "drain": "Te",
+      "jungian": "ISFP",
+      "socionics": "ESI",
+      "quadra": "Gamma"
+    },
+    {
+      "code": "RFN",
+      "callsign": "Understanding",
+      "lens": "Fi",
+      "tool": "Ne",
+      "spark": "Si",
+      "drain": "Te",
+      "jungian": "INFP",
+      "socionics": "EII",
+      "quadra": "Delta"
+    },
+    {
+      "code": "AFS",
+      "callsign": "Connection",
+      "lens": "Fe",
+      "tool": "Si",
+      "spark": "Ne",
+      "drain": "Ti",
+      "jungian": "ESFJ",
+      "socionics": "ESE",
+      "quadra": "Alpha"
+    },
+    {
+      "code": "AFN",
+      "callsign": "Community",
+      "lens": "Fe",
+      "tool": "Ni",
+      "spark": "Se",
+      "drain": "Ti",
+      "jungian": "ENFJ",
+      "socionics": "EIE",
+      "quadra": "Beta"
+    }
+  ],
+  "functions": {
+    "Si": {
+      "plain": "going back to what you've lived through",
+      "doing": "going back to what you've lived through",
+      "tagline": "Lifetime Memory / Stored Personal Experiences"
+    },
+    "Se": {
+      "plain": "all in on what's in front of you right now",
+      "doing": "being all in on what's in front of you right now",
+      "tagline": "Engaged Present / Immersive Awareness"
+    },
+    "Ni": {
+      "plain": "seeing where things are heading",
+      "doing": "seeing where things are heading",
+      "tagline": "Eternal Vision / Imagined Evolution of Ideas"
+    },
+    "Ne": {
+      "plain": "seeing what else something could become",
+      "doing": "seeing what else something could become",
+      "tagline": "Eternal Possibilities / Speculated Potential Futures"
+    },
+    "Ti": {
+      "plain": "it has to make sense by your own logic",
+      "doing": "making sure it makes sense by your own logic",
+      "tagline": "Structured Analysis / Self-Referential Consideration"
+    },
+    "Te": {
+      "plain": "going by what works and what the facts show",
+      "doing": "going by what works and what the facts show",
+      "tagline": "Objective Implementation / Externally-Oriented Execution"
+    },
+    "Fi": {
+      "plain": "your own sense of what matters, and where you stand with each person",
+      "doing": "going by your own sense of what matters",
+      "tagline": "Inner Evaluation / Self-Directed Judgment"
+    },
+    "Fe": {
+      "plain": "the mood and shared values of the people around you",
+      "doing": "reading the room and what your people value",
+      "tagline": "Outer Evaluation / Socially-Oriented Judgment"
+    }
+  },
+  "stack_roles": {
+    "lens": {
+      "plain": "how you take things in first",
+      "trc": "Primary function used by a subject to color its world view, running most of the time yet utilizing least of its energy, and defines their core processing style."
+    },
+    "tool": {
+      "plain": "how you make it real",
+      "trc": "Supporting function to the primary function (lens), acting as an enabling tool for execution and refinement utility to it."
+    },
+    "spark": {
+      "plain": "what comes and goes, and refuels you",
+      "trc": "An inconsistent function used as an escape mechanism, appearing as a balancing function when lens and tool are overused for long periods."
+    },
+    "drain": {
+      "plain": "what costs you the most energy",
+      "trc": "Unconsciously suppressed function, repressed to let the primary function (lens) do its work. Sometimes appears for brief period of time yet most energy-expensive."
+    }
+  },
+  "quadras": {
+    "Alpha": [
+      "Ne",
+      "Ti",
+      "Fe",
+      "Si"
+    ],
+    "Beta": [
+      "Ni",
+      "Fe",
+      "Ti",
+      "Se"
+    ],
+    "Gamma": [
+      "Ni",
+      "Te",
+      "Fi",
+      "Se"
+    ],
+    "Delta": [
+      "Ne",
+      "Te",
+      "Fi",
+      "Si"
+    ]
+  },
+  "patterns": {
+    "P01": {
+      "name": "lived_memory_anchor",
+      "points_to": "Si",
+      "plain": "decides from specific things they lived through",
+      "label": "leaning on what you've lived",
+      "doing": "going back to what you've lived through"
+    },
+    "P02": {
+      "name": "present_immersion",
+      "points_to": "Se",
+      "plain": "lives in the moment, very aware of what's going on around them",
+      "label": "being all in on the moment",
+      "doing": "being all in on what's in front of you right now"
+    },
+    "P03": {
+      "name": "inner_trajectory",
+      "points_to": "Ni",
+      "plain": "sees where things are heading, one long inner arc",
+      "label": "seeing where it's heading",
+      "doing": "seeing where things are heading"
+    },
+    "P04": {
+      "name": "outward_branching",
+      "points_to": "Ne",
+      "plain": "many possibilities from one spark, hopping between them",
+      "label": "seeing what else it could be",
+      "doing": "seeing what else something could become"
+    },
+    "P05": {
+      "name": "internal_logical_frame",
+      "points_to": "Ti",
+      "plain": "judges by their own standard of what's logically consistent",
+      "label": "making it make sense to you",
+      "doing": "making sure it makes sense by your own logic"
+    },
+    "P06": {
+      "name": "external_results_frame",
+      "points_to": "Te",
+      "plain": "judges by what works in the visible world, results and numbers",
+      "label": "going by what works",
+      "doing": "going by what works and what the facts show"
+    },
+    "P07": {
+      "name": "inner_value_anchor",
+      "points_to": "Fi",
+      "plain": "a quiet private sense of what matters and what's acceptable",
+      "label": "your own sense of what matters",
+      "doing": "going by your own sense of what matters"
+    },
+    "P08": {
+      "name": "shared_atmosphere",
+      "points_to": "Fe",
+      "plain": "goes by what the group values and adjusts to keep accord",
+      "label": "the mood of the room",
+      "doing": "reading the room and what your people value"
+    },
+    "P09": {
+      "name": "internal_reference_drift",
+      "points_to": "R",
+      "plain": "their frame holds steady inside them and updates slowly",
+      "label": "a frame that holds steady",
+      "doing": "keeping a frame that holds steady inside you"
+    },
+    "P10": {
+      "name": "external_reference_drift",
+      "points_to": "A",
+      "plain": "their frame updates from the latest outside input",
+      "label": "a frame that updates fast",
+      "doing": "updating fast from what's newest around you"
+    },
+    "P11": {
+      "name": "enneagram_fixation_signature",
+      "points_to": "fixation",
+      "plain": "one thought pattern keeps coming back across parts of life",
+      "label": "a thought that keeps coming back",
+      "doing": null
+    },
+    "P12": {
+      "name": "enneagram_passion_signature",
+      "points_to": "passion",
+      "plain": "one drive keeps showing up behind decisions",
+      "label": "a drive that keeps showing up",
+      "doing": null
+    },
+    "P13": {
+      "name": "subtype_instinctual_focus",
+      "points_to": "instinct",
+      "plain": "attention goes first to food, health and home (self_preservative), place in the group (social), or one intense bond (sexual; say \"one-to-one\" out loud)",
+      "label": "where your attention goes first",
+      "doing": null
+    },
+    "P14": {
+      "name": "stress_signature",
+      "points_to": "spark and drain",
+      "plain": "what restores them points to the spark; what costs them the most points to the drain",
+      "label": "what drains you, what refuels you",
+      "doing": null
+    }
+  },
+  "enneagram": {
+    "1": {
+      "triad": "gut",
+      "fixation": "Resentment",
+      "passion": "Anger",
+      "trap": "Perfection"
+    },
+    "2": {
+      "triad": "heart",
+      "fixation": "Flattery",
+      "passion": "Pride",
+      "trap": "Freedom"
+    },
+    "3": {
+      "triad": "heart",
+      "fixation": "Vanity",
+      "passion": "Deceit",
+      "trap": "Efficiency"
+    },
+    "4": {
+      "triad": "heart",
+      "fixation": "Melancholy",
+      "passion": "Envy",
+      "trap": "Authenticity"
+    },
+    "5": {
+      "triad": "head",
+      "fixation": "Stinginess",
+      "passion": "Avarice",
+      "trap": "Observer"
+    },
+    "6": {
+      "triad": "head",
+      "fixation": "Cowardice",
+      "passion": "Fear",
+      "trap": "Security"
+    },
+    "7": {
+      "triad": "head",
+      "fixation": "Planning",
+      "passion": "Gluttony",
+      "trap": "Idealism"
+    },
+    "8": {
+      "triad": "gut",
+      "fixation": "Vengeance",
+      "passion": "Lust",
+      "trap": "Justice"
+    },
+    "9": {
+      "triad": "gut",
+      "fixation": "Indolence",
+      "passion": "Sloth",
+      "trap": "Seeker"
+    }
+  },
+  "enneagram_instincts": {
+    "self_preservative": "self-preservation",
+    "social": "social",
+    "sexual": "one-to-one"
+  }
+}

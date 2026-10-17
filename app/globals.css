@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* Forge brand tokens: violet-black for consent and the call, a daylight break for the result. */
+:root {
+  --bg: #0a0912;
+  --bg-elev: #13111d;
+  --bg-card: #17152a;
+  --fg: #f5f3ef;
+  --muted: #a09bb0;
+  --faint: #3a3748;
+  --violet: #7c5cfc;
+  --violet-deep: #5b3fe0;
+  --ember: #e8622a;
+  --amber: #f0b429;
+  --teal: #2dd4bf;
+  --border: #1e1b2a;
+  --code-bg: #09080f;
+
+  --daylight: #f9f4f2;
+  --daylight-fg: #2a1f14;
+  --daylight-muted: #6b5b48;
+  --daylight-accent: #c4622d;
+  /* The accent, darkened so small text on daylight passes 4.5:1. */
+  --daylight-accent-ink: #a14d1f;
+  --daylight-card: #ffffff;
+  --daylight-border: #e0d5c0;
+  --daylight-body: #3d2817;
+}
+
+/* Two themes, one set of names: components use the names, each screen picks a theme. */
+@layer components {
+  .forge-night {
+    --page: var(--bg);
+    --surface: var(--bg-card);
+    --raised: var(--bg-elev);
+    --ink: var(--fg);
+    --ink-body: var(--fg);
+    --quiet: var(--muted);
+    --line: var(--faint);
+    --accent: var(--ember);
+    --accent-ink: var(--ember);
+    --emph: var(--amber);
+    --focus: var(--violet);
+    --card-radius: var(--radius-card);
+    color: var(--fg);
+    accent-color: var(--violet);
+    /* One quiet bloom of violet and ember behind everything. */
+    background:
+      radial-gradient(70% 50% at 8% -12%, rgb(124 92 252 / 0.16), transparent 70%),
+      radial-gradient(50% 40% at 104% 0%, rgb(232 98 42 / 0.09), transparent 70%),
+      var(--bg);
+  }
+
+  .forge-day {
+    --page: var(--daylight);
+    --surface: var(--daylight-card);
+    --raised: var(--daylight);
+    --ink: var(--daylight-fg);
+    --ink-body: var(--daylight-body);
+    --quiet: var(--daylight-muted);
+    --line: var(--daylight-border);
+    --accent: var(--daylight-accent);
+    --accent-ink: var(--daylight-accent-ink);
+    --emph: var(--daylight-accent);
+    --focus: var(--daylight-accent-ink);
+    --card-radius: var(--radius-paper);
+    color: var(--daylight-fg);
+    accent-color: var(--daylight-accent-ink);
+    background: var(--daylight);
+  }
+}
+
+/* The theme names as Tailwind colors, plus the few brand colors used outright (the violet button, the ember hover, the teal dot, the log). */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-body: var(--ink-body);
+  --color-quiet: var(--quiet);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-emph: var(--emph);
+
+  --color-forge-fg: var(--fg);
+  --color-forge-muted: var(--muted);
+  --color-forge-violet: var(--violet);
+  --color-forge-violet-deep: var(--violet-deep);
+  --color-forge-ember: var(--ember);
+  --color-forge-teal: var(--teal);
+  --color-forge-border: var(--border);
+  --color-forge-code: var(--code-bg);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-instrument-sans);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* Shape and motion from the brand: buttons 14 px, small 10, cards 24, the daylight paper 4. */
+@theme {
+  --radius-btn: 14px;
+  --radius-btn-sm: 10px;
+  --radius-card: 24px;
+  --radius-paper: 4px;
+
+  --animate-pop-in: pop-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-rise: rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-breathe: breathe 6s ease-in-out infinite;
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The breathing mark: silence and a slow pulse, never bouncing dots. */
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* Fraunces italic display: the wordmark, headlines, the callsign. */
+@utility type-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "WONK" 1, "SOFT" 50;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+/* Mono overlines, labels and tags. */
+@utility type-label {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* The call block needs real heights all the way down from html. */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-instrument-sans), system-ui, sans-serif;
+  font-weight: 450;
+  line-height: 1.6;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--focus, var(--violet));
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

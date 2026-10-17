@@ -1,0 +1,24 @@
+.env*
+!.env.example
+node_modules/
+.next/
+.vercel
+
+# local working notes, never published
+research/
+tasks/
+ARCHITECTURE.md
+lib/corpus/writeups.local.json
+
+# scratch and markers
+.scaffold-tmp
+.fix-done
+
+# build and tooling output
+/out/
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.DS_Store
+*.pem

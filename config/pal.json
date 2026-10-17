@@ -1,0 +1,50 @@
+{
+  "_setup": {
+    "read_by": "scripts/setup-tavus.ts removes this block; everything else in this file is the POST /v2/pals body",
+    "system_prompt_from": "config/forge-system-prompt.md",
+    "guardrail_from": "config/guardrail.json",
+    "tools_from": "config/tools.json",
+    "attach_tools": ["save_goal", "synthesize_profile"],
+    "ids_written_to": "config/ids.json"
+  },
+  "pal_name": "Forge",
+  "system_prompt": "",
+  "pipeline_mode": "full",
+  "default_face_id": "rc9cff32ceba",
+  "languages": ["en"],
+  "disclosure_type": "always",
+  "verbal_disclosure": "Quick heads up, I'm an AI. I watch for stuff like pauses so I know when to give you room.",
+  "visual_disclosure": "You're talking with Forge, an AI. It reads expressions and tone to pace the chat, never to decide your type.",
+  "guardrail_ids": [],
+  "layers": {
+    "llm": {
+      "model": "tavus-gpt-5.6-terra"
+    },
+    "conversational_flow": {
+      "turn_detection_model": "sparrow-2",
+      "turn_taking_patience": "medium",
+      "pal_interruptibility": "medium",
+      "idle_engagement": "patient"
+    },
+    "perception": {
+      "perception_model": "raven-1",
+      "emotion_recognition": "auto",
+      "audio_awareness_queries": [
+        "Does the user pause for a few seconds, or stop and restart a sentence, before answering?",
+        "Does the user's voice get faster, louder or more animated while talking about a particular topic?",
+        "Does the user's voice drop in energy or volume when describing a particular task, place or situation?"
+      ],
+      "visual_awareness_queries": [
+        "Does the user look away from the camera for a few seconds before answering?",
+        "Does the user smile or become more animated in their face or hands when a particular topic comes up?",
+        "Does the user's face or posture tighten when a particular topic comes up?",
+        "Does the user react to things happening around them, such as sounds, people or objects in the room?"
+      ],
+      "perception_analysis_queries": [
+        "In which part of the call (beginning, middle, or end) did the participant look most animated, and in which part least?",
+        "Is there any indication that more than one person was present during the call?",
+        "On a scale of 1-100, how often was the participant looking at the screen?"
+      ]
+    }
+  }
+}

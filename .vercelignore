@@ -1,0 +1,10 @@
+.env*
+!.env.example
+research/
+tasks/
+ARCHITECTURE.md
+.scaffold-tmp/
+.fix-done
+.next/
+node_modules/
+.vercel/
