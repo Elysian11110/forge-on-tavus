@@ -62,7 +62,7 @@ export interface ForgeStore {
   setReportUrl(conversationId: string, url: string): Promise<void>;
   /** Marks the call ended; ending twice is fine. */
   endSession(conversationId: string): Promise<void>;
-  /** Removes what Forge kept of the call but keeps the token, so Delete my data can be sent again until Tavus confirms. */
+  /** Removes what Forge kept of the call but keeps the token. */
   clearSessionData(conversationId: string): Promise<void>;
   /** Removes every key of the call, token included. */
   deleteSession(conversationId: string): Promise<void>;

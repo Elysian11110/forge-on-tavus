@@ -3,7 +3,6 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { setTimeout as pause } from "node:timers/promises";
 import { arcTiming, type Switches } from "@/lib/switches";
 import type { Arc } from "@/lib/types";
 
@@ -12,9 +11,6 @@ const TAVUS_ORIGIN = "https://tavusapi.com";
 
 // A Tavus request that has not answered by then is abandoned.
 const TAVUS_TIMEOUT_MS = 20_000;
-
-// Right after /end Tavus may still be writing the transcript, so the hard delete gets one more try after this.
-const HARD_DELETE_RETRY_MS = 3000;
 
 // The PAL plus one person.
 const MAX_PARTICIPANTS = 2;
@@ -174,20 +170,6 @@ export async function endConversation(conversationId: string): Promise<number> {
   const nothingToEnd = reply.status >= 400 && reply.status < 500 && ![401, 403, 429].includes(reply.status);
   if (reply.ok || nothingToEnd) return reply.status;
   throw new TavusError(reply.status, errorMessage(reply));
-}
-
-/** DELETE /v2/conversations/{id}?hard=true, irrevocable; answers the last HTTP status, 204 when done. */
-export async function hardDeleteConversation(conversationId: string): Promise<number> {
-  const path = `/conversations/${encodeURIComponent(conversationId)}?hard=true`;
-  const first = await send("DELETE", path);
-  if (conversationGone(first.status)) return first.status;
-  await pause(HARD_DELETE_RETRY_MS);
-  return (await send("DELETE", path)).status;
-}
-
-/** The hard delete went through, or Tavus no longer knows the conversation. */
-export function conversationGone(status: number): boolean {
-  return (status >= 200 && status < 300) || status === 404 || status === 410;
 }
 
 function readIds(): Record<string, unknown> {

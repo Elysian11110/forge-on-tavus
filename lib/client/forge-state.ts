@@ -24,8 +24,6 @@ export interface ForgeState {
   /** The watchdog fired before any reading arrived. */
   noReading: boolean;
   ended: { at: number; by: CallEnding } | null;
-  /** Delete my data went through at Forge; whether Tavus confirmed its half. */
-  deleted: { tavusConfirmed: boolean } | null;
 }
 
 export type ForgeAction =
@@ -34,8 +32,7 @@ export type ForgeAction =
   | { type: "crisis" }
   | { type: "synthesizing" }
   | { type: "watchdog" }
-  | { type: "ended"; at: number; by: CallEnding }
-  | { type: "deleted"; tavusConfirmed: boolean };
+  | { type: "ended"; at: number; by: CallEnding };
 
 export const initialForgeState: ForgeState = {
   screen: "consent",
@@ -45,7 +42,6 @@ export const initialForgeState: ForgeState = {
   synthesizing: false,
   noReading: false,
   ended: null,
-  deleted: null,
 };
 
 export function forgeReducer(state: ForgeState, action: ForgeAction): ForgeState {
@@ -62,7 +58,5 @@ export function forgeReducer(state: ForgeState, action: ForgeAction): ForgeState
       return { ...state, noReading: true };
     case "ended":
       return state.ended ? state : { ...state, screen: "result", ended: { at: action.at, by: action.by } };
-    case "deleted":
-      return { ...state, deleted: { tavusConfirmed: action.tavusConfirmed } };
   }
 }

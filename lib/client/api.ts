@@ -6,7 +6,6 @@ import {
   type ApiErrorCode,
   type CreateSessionRequest,
   type CreateSessionResponse,
-  type DeleteSessionResponse,
   type EndSessionRequest,
   type EndSessionResponse,
   type EventsRequest,
@@ -108,9 +107,4 @@ export function sendEndBeacon(session: SessionRef): boolean {
 /** POST /api/report: builds the full Forge report from what they said, or hands back the one already built. */
 export function fetchReport(session: SessionRef): Promise<RouteReply<ReportResponse>> {
   return request("/api/report", postJson(endBody(session), session.sessionToken));
-}
-
-/** POST /api/session/delete: ends a live call, wipes Forge's copy and hard-deletes the Tavus conversation. */
-export function deleteSession(session: SessionRef): Promise<RouteReply<DeleteSessionResponse>> {
-  return request("/api/session/delete", postJson(endBody(session), session.sessionToken));
 }

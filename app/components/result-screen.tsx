@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { AllGone } from "@/app/components/all-gone";
 import { StatusLine, Wordmark } from "@/app/components/brand";
 import { CrisisCard } from "@/app/components/crisis-card";
-import { DeleteMyData } from "@/app/components/delete-my-data";
 import { FullReport } from "@/app/components/full-report";
 import { GoalChips } from "@/app/components/goal-chips";
 import { NoReading } from "@/app/components/no-reading";
@@ -25,15 +23,12 @@ interface ResultScreenProps {
   synthesizing: boolean;
   noReading: boolean;
   ended: { at: number; by: CallEnding };
-  deleted: { tavusConfirmed: boolean } | null;
   crisisLine: string;
-  onDeleted: (tavusConfirmed: boolean) => void;
 }
 
-/** What the page shows: the rundown, the honest no-reading note, the crisis card, or the all-gone note. */
+/** What the page shows: the rundown, the honest no-reading note, or the crisis card. */
 function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
-  const { profile, goals, crisis, synthesizing, noReading, ended, deleted } = props;
-  if (deleted) return <AllGone tavusConfirmed={deleted.tavusConfirmed} />;
+  const { profile, goals, crisis, synthesizing, noReading, ended } = props;
   if (crisis || profile?.status === "withheld_for_safety") return <CrisisCard line={props.crisisLine} />;
   if (profile) {
     // Under F05 the profile has no goal cards, yet Veronica just said the goals are on screen: list them.
@@ -57,7 +52,7 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
   );
 }
 
-/** The result page as it looks: the mark, the full report, the quick read, and the two quiet actions under it. */
+/** The result page as it looks: the mark, the full report, the quick read, and the quiet action under it. */
 function ResultLayout({ report, body, actions }: { report: ReactNode; body: ReactNode; actions: ReactNode }) {
   return (
     <main className="min-h-dvh">
@@ -72,7 +67,7 @@ function ResultLayout({ report, body, actions }: { report: ReactNode; body: Reac
 }
 
 export function ResultScreen(props: ResultScreenProps) {
-  const { synthesizing, ended, deleted, crisis, profile } = props;
+  const { synthesizing, ended, crisis, profile } = props;
   const [waitOver, setWaitOver] = useState(false);
 
   // A reading can still land after the call ends, so the honest no-reading note waits a little first.
@@ -84,16 +79,15 @@ export function ResultScreen(props: ResultScreenProps) {
 
   return (
     <ResultLayout
-      report={!crisis && !deleted && profile?.status !== "withheld_for_safety" ? <FullReport session={props.session} /> : null}
+      report={!crisis && profile?.status !== "withheld_for_safety" ? <FullReport session={props.session} /> : null}
       body={resultBody(props, waitOver)}
       actions={
         <>
           {!crisis && (
-            <button type="button" onClick={() => window.location.reload()} className="line-btn">
+            <button type="button" onClick={() => window.location.assign("/homepage")} className="line-btn">
               Talk again
             </button>
           )}
-          {!deleted && <DeleteMyData session={props.session} onDeleted={props.onDeleted} />}
         </>
       }
     />

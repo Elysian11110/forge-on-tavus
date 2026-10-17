@@ -7,7 +7,7 @@ import { CVIProvider } from "@/app/components/cvi/components/cvi-provider";
 import { ResultScreen } from "@/app/components/result-screen";
 import { useSessionPoll } from "@/app/hooks/use-session-poll";
 import { endSession, sendEndBeacon, worthRetrying, type SessionRef } from "@/lib/client/api";
-import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding } from "@/lib/client/forge-state";
+import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding, type Screen } from "@/lib/client/forge-state";
 import { mergeGoals } from "@/lib/client/goals";
 import type { Arc } from "@/lib/types";
 
@@ -15,6 +15,13 @@ import type { Arc } from "@/lib/types";
 const RESULT_POLL_WINDOW_MS = 30_000;
 /** One retry of the end route, this long after a failed first try. */
 const END_RETRY_MS = 2000;
+
+/** Each screen has its own address, so the URL says where you are. */
+const SCREEN_PATHS: Record<Screen, { path: string; title: string }> = {
+  consent: { path: "/homepage", title: "Forge" },
+  call: { path: "/veronica-talks", title: "Talking with Veronica · Forge" },
+  result: { path: "/report", title: "Your report · Forge" },
+};
 
 export interface ForgeAppProps {
   /** Chosen on the server from x-vercel-ip-country. */
@@ -33,14 +40,14 @@ async function endOnServer(session: SessionRef): Promise<void> {
 /** The whole visit: the landing, the call, the result. One reducer holds what happened; one poll reads the server's view. */
 export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   const [state, dispatch] = useReducer(forgeReducer, initialForgeState);
-  const { session, screen, ended, deleted } = state;
+  const { session, screen, ended } = state;
 
   const view = useSessionPoll(session, {
-    enabled: screen !== "consent" && !deleted,
+    enabled: screen !== "consent",
     until: ended ? ended.at + RESULT_POLL_WINDOW_MS : null,
   });
-  const profile = deleted ? null : (view?.profile ?? null);
-  const goals = deleted ? [] : mergeGoals(view?.goals ?? [], state.goals);
+  const profile = view?.profile ?? null;
+  const goals = mergeGoals(view?.goals ?? [], state.goals);
   const crisis = state.crisis || Boolean(view?.crisis);
 
   const start = useCallback((next: ActiveSession) => dispatch({ type: "started", session: next }), []);
@@ -56,6 +63,14 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
     },
     [session],
   );
+
+  // The screen lives in this one component, so the address follows it instead of the other way
+  // round: a fresh load of /report or /veronica-talks starts at the landing and says /homepage.
+  useEffect(() => {
+    const { path, title } = SCREEN_PATHS[screen];
+    if (window.location.pathname !== path) window.history.replaceState(null, "", path);
+    document.title = title;
+  }, [screen]);
 
   // Closing the tab mid-call ends it too, so the minutes stop.
   useEffect(() => {
@@ -92,9 +107,7 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
           synthesizing={state.synthesizing}
           noReading={state.noReading}
           ended={ended}
-          deleted={deleted}
           crisisLine={crisisLine}
-          onDeleted={(tavusConfirmed) => dispatch({ type: "deleted", tavusConfirmed })}
         />
       )}
     </CVIProvider>

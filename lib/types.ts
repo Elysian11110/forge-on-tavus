@@ -355,17 +355,6 @@ export interface EndSessionResponse {
   ended: true;
 }
 
-// POST /api/session/delete, the same body as end.
-export type DeleteSessionRequest = EndSessionRequest;
-
-// POST /api/session/delete 200; tavusStatus is the HTTP status of the hard delete, null if Tavus
-// could not be reached. Forge's keys are gone either way; the token stays until Tavus confirms, so
-// the same request can be sent again.
-export interface DeleteSessionResponse {
-  deleted: true;
-  tavusStatus: number | null;
-}
-
 // POST /api/report 200: the full Forge report, as a link to the Forge site's shared-report page.
 export interface ReportResponse {
   url: string;

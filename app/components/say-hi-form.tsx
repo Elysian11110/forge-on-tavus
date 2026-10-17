@@ -7,7 +7,7 @@ import type { ActiveSession } from "@/lib/client/forge-state";
 import type { CreateSessionResponse } from "@/lib/types";
 
 const CONSENT_TEXT =
-  "I'm 18 or older, I know Veronica is an AI that reads my expressions and tone to pace the chat, and what I say is kept for 24 hours and used by Forge's AI to build my report.";
+  "I'm 18 or older, and I know Veronica is an AI that reads my expressions and tone to pace the chat.";
 
 const MIC_PROBLEM_TEXT: Record<MicProblem, string> = {
   missing: "No mic found. Plug one in, then try again.",
