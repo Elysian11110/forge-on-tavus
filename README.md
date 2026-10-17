@@ -14,7 +14,7 @@ It also fixed the thing I never liked about the voice version. It's extremely ha
 
 ## What happens in one call
 
-1. You tick one box (18 or older, you know Forge is an AI, you're okay with Tavus reading your expressions and tone), add a first name if you like, and say hi. The mic and camera are checked before anything is paid for: no mic, no call; no camera, voice only.
+1. You add a first name if you like and tick one box: you're 18 or older, you know Forge is an AI that reads your expressions and tone to pace the chat, and what you say is kept for 24 hours so you can see your results. Then you say hi. The mic and camera are checked before anything is paid for: no mic, no call; no camera, voice only.
 2. The server checks the passcode, checks that Tavus lists no live call, and creates a private room with your name, the call length and your country's crisis line in its context. Billing starts here.
 3. Forge says it's an AI, then asks what you're working toward. Each goal you name pops onto the screen while Forge keeps talking.
 4. You tell a few stories: a choice that changed things, what recharges you, what drains you. Sparrow-2 lets you finish, Raven notices pauses and energy, and the browser forwards the text of your turns to Forge's server. At 2:45 the browser nudges Forge to wrap up.
@@ -59,7 +59,7 @@ Six decisions, and the trade-off each one makes.
 
 **4. A private room with server-set limits.** `require_auth` with a meeting token the browser passes to join explicitly, two participants, a 300-second cap, a 120-second join window, 10 seconds after you leave, one live call at a time (Tavus is the source of truth, not my store, so a lost End never blocks the next call), a passcode, and End on every path: the button, leaving the room, closing the tab, and Forge's own `end_call`. The trade-off: one person at a time, and turning the token off is a redeploy. For a demo on a free plan that's the right trade.
 
-**5. Raven paces but never types, with consent and a one-switch EU mode.** Three audio and four visual questions about pauses, pace, energy and expressions. The prompt uses them to wait or to stay, and once a call Forge may name one with your own topic ("You lit up talking about the workshop. Want to stay there a sec?"). The type comes from the stories only; the corpus is explicit that tone and intensity don't type anyone. The consent screen says all of this in plain words, and `FORGE_EU_POLICY=always` adds `policy: eu` to every call so emotion recognition resolves the EU way. The trade-off: EU mode is one global switch, not per visitor. Enough to show the path, not enough for a product.
+**5. Raven paces but never types, with consent and a one-switch EU mode.** Three audio and four visual questions about pauses, pace, energy and expressions. The prompt uses them to wait or to stay, and once a call Forge may name one with your own topic ("You lit up talking about the workshop. Want to stay there a sec?"). The type comes from the stories only; the corpus is explicit that tone and intensity don't type anyone. The one consent line says this in plain words, and `FORGE_EU_POLICY=always` adds `policy: eu` to every call so emotion recognition resolves the EU way. The trade-off: EU mode is one global switch, not per visitor. Enough to show the path, not enough for a product.
 
 **6. Rules in the prompt, no knowledge base, only the CC BY text shipped.** The whole method (the patterns, the TRC table, the hunch bank, the move kinds) is about 2,900 tokens of system prompt, and the corpus file in the repo holds only the 16 TRC rows, short glosses and label words. The trade-off: no retrieval, so no long definitions on demand, and two of my corpora stay out of the repo on purpose. In return the rules apply on every turn, nothing pulls type talk into the stories, and the prompt plus both tools sits about 150 tokens under Tavus's 5,000-token guidance.
 
@@ -113,7 +113,7 @@ The full log, ten items in three trends with one fix per trend, is in [FDE-NOTES
 
 - For getting to know yourself, not a test. TRC is a cognitive processing model, not a validated psychometric test, and Forge is not clinical: no diagnoses, no treatment, no decisions about other people, never for hiring.
 - It refuses a lot, on purpose. Forge's full method was designed for a 15 to 30 minute conversation. In five minutes, most unscripted calls end with "I won't guess a type yet" and the one question that would settle it. That's the feature.
-- Safety is a floor, not a guarantee. The prompt stops the type stuff on a crisis and gives the line for your country (Samaritans in the UK, call or text 988 in the US, findahelpline.com anywhere else), the same line that's on your screen. The Tavus guardrail is a backup: it shows a card and tells the server to refuse any reading. Tavus says guardrails are not guaranteed, so the prompt and the server carry it.
+- Safety is a floor, not a guarantee. The prompt stops the type stuff on a crisis and gives the line for your country (Samaritans in the UK, call or text 988 in the US, findahelpline.com anywhere else), the same line the crisis card shows. The Tavus guardrail is a backup: it shows a card and tells the server to refuse any reading. Tavus says guardrails are not guaranteed, so the prompt and the server carry it.
 - English only, tested on desktop Chrome, one call at a time, age self-declared.
 - Data: your goals, the text of your turns, the reading and a debug record live 24 hours at Forge. Tavus keeps its transcript until "Delete my data". Nothing is recorded. Tavus's default retention isn't in the docs, so I'd confirm it before putting real clients on this.
 
@@ -148,8 +148,4 @@ Two checks that cost no minutes:
 
   Expect 200, `text/plain`, `x-forge-store: upstash` and the "I don't have enough of your stories yet" line, since that conversation has no stored turns. A wrong signature gets 401.
 
-A local `npm run dev` gives you the consent screen, the call and the goal chips. The reveal is posted to whatever `PUBLIC_BASE_URL` the tool was created with, so the full arc runs on the deployed URL. `?presenter=1` adds a plain log under the screens: every event, timings from Forge's first word, the time check, the watchdog, and the debug record (evidence sent and matched, which refusal fired on what count, which lines were replaced).
-
-## Credit
-
-The 16 TRC rows, the function taglines and the stack definitions come from Temporal Reference Cognition (TRC) by Gourav Kumar Mallick (Parul University), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The plain-words glosses and the template wording are Forge's own, not part of TRC. The Jungian, Socionics and Enneagram material in this repo is label words only.
+A local `npm run dev` gives you the landing, the call and the goal chips, and `/preview` shows every screen state filled from the Sam fixture (it's a 404 in production). The reveal is posted to whatever `PUBLIC_BASE_URL` the tool was created with, so the full arc runs on the deployed URL. `?presenter=1` adds a plain log under the screens: every event, timings from Forge's first word, the time check, the watchdog, and the debug record (evidence sent and matched, which refusal fired on what count, which lines were replaced).
