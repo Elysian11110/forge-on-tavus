@@ -84,7 +84,7 @@ Two smaller ones on the same theme: `participant_absent_timeout` is a join windo
 
 ### From my live calls
 
-- Run 1 (terra, date): what the debug record showed (evidence sent and matched, which refusal fired, which lines were replaced), what the shutdown reason was, and what the GET returned after the hard delete.
+- Run 1 (terra, date): what Veronica said in the reveal, what the result screen showed (the type, or which part she wouldn't call yet), what the shutdown reason was, and what the GET returned after the hard delete.
 - Run 2 (gemma-4, date): the same, plus which model I kept and why.
 
 ## 2. Pilot plan: a coaching company
@@ -106,7 +106,7 @@ The customer: a coaching or wellness company that wants each client to have an o
 | "What fits" | one tap after the rundown, 1 to 5 | 4.0 average, under 10% at 1 or 2 |
 | Test-retest | the same client a week apart, the same TRC row | 7 of 10 pairs |
 | Acted on a move | the coach asks at the next session whether the client tried it | 50% |
-| Time to first word | create to Forge's first spoken line | under 10 seconds, median |
+| Time to first word | create to Veronica's first spoken line | under 10 seconds, median |
 | Cost per completed rundown | Tavus minutes at the plan rate, over completed calls | under $2.50 on Builder |
 | Safety | every crisis flag shows the card and withholds the reading | zero readings after a flag |
 | Deletion | "Delete my data" confirmed by Tavus | 100% |

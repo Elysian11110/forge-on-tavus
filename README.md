@@ -1,6 +1,6 @@
 # Forge on Tavus
 
-Forge is the friend who knows way too much about personality types, and it lives on a Tavus video call. You name a goal or two, tell a few real stories, and Forge tells you how you work across four frameworks, what that means for each goal, and one small move to try this week. It runs on Tavus CVI: a Phoenix face, Sparrow-2 turn-taking, Raven-1 perception, two tools, and a small Next.js server that checks everything the model says before Tavus says it out loud.
+Forge is a website where you get on a short Tavus video call with Veronica, the friend who knows way too much about personality types. You name a goal or two, tell a few real stories, and Veronica tells you how you work across four frameworks, what that means for each goal, and one small move to try this week. It runs on Tavus CVI: a Phoenix face, Sparrow-2 turn-taking, Raven-1 perception, two tools, and a small Next.js server that checks everything the model says before Tavus says it out loud.
 
 Watch it: the Loom link goes here before Monday.
 
@@ -8,17 +8,17 @@ Watch it: the Loom link goes here before Monday.
 
 Forge is my own project. Before this take-home it was a voice agent, and the way I described it to friends was "I created my own voice agent that talks to you like a therapist and guesses your MBTI and enneagram". The typing method and the corpus behind it are mine, so this was the one idea where I'd be building the product, not a demo of a product. Forge's rule from day one: action is the product, not the label. Every type quiz stops at the label.
 
-Tavus gives it two things I couldn't build in a weekend. A face that reacts while you talk, and Raven, which reads what the words leave out. When your voice speeds up on a story, Forge can stay there one more question. That's the moment I'd point at in a demo.
+Tavus gives it two things I couldn't build in a weekend. A face that reacts while you talk, and Raven, which reads what the words leave out. When your voice speeds up on a story, Veronica can stay there one more question. That's the moment I'd point at in a demo.
 
-It also fixed the thing I never liked about the voice version. It's extremely hard to get AI to be "human" across all industries, and the version that works here isn't a therapist. Forge is a friend over coffee with strong opinions about typology, and it refuses to guess when your stories don't agree.
+It also fixed the thing I never liked about the voice version. It's extremely hard to get AI to be "human" across all industries, and the version that works here isn't a therapist. Veronica is a friend over coffee with strong opinions about typology, and she refuses to guess when your stories don't agree.
 
 ## What happens in one call
 
-1. You add a first name if you like and tick one box: you're 18 or older, you know Forge is an AI that reads your expressions and tone to pace the chat, and what you say is kept for 24 hours so you can see your results. Then you say hi. The mic and camera are checked before anything is paid for: no mic, no call; no camera, voice only.
-2. The server checks the passcode, checks that Tavus lists no live call, and creates a private room with your name, the call length and your country's crisis line in its context. Billing starts here.
-3. Forge says it's an AI, then asks what you're working toward. Each goal you name pops onto the screen while Forge keeps talking.
-4. You tell a few stories: a choice that changed things, what recharges you, what drains you. Sparrow-2 lets you finish, Raven notices pauses and energy, and the browser forwards the text of your turns to Forge's server. At 2:45 the browser nudges Forge to wrap up.
-5. Forge says "Give me a sec, I'm putting it all together." The model posts its picks to my server, signed. The server checks every quote against your own words, writes the reveal, and Tavus speaks it word for word. Your goal cards appear, Forge walks the rundown in three short turns, and the call ends by about five minutes. If no reading lands by 4:00, the screen says "No reading this time" and keeps your goals. "Delete my data" wipes Forge's copy and hard-deletes the Tavus conversation.
+1. You add a first name if you like and tick one box: you're 18 or older, you know Veronica is an AI that reads your expressions and tone to pace the chat, and what you say is kept for 24 hours so you can see your results. Then you say hi. The mic and camera are checked before anything is paid for: no mic, no call; no camera, voice only.
+2. The server checks that Tavus lists no live call and creates a private room with your name, the call length and your country's crisis line in its context. Billing starts here.
+3. Veronica says she's an AI, then asks what you're working toward. Each goal you name pops onto the screen while she keeps talking.
+4. You tell a few stories: a choice that changed things, what recharges you, what drains you. Sparrow-2 lets you finish, Raven notices pauses and energy, and the browser forwards the text of your turns to Forge's server. At 2:45 the browser nudges Veronica to wrap up.
+5. Veronica says "Give me a sec, I'm putting it all together." The model posts its picks to my server, signed. The server checks every quote against your own words, writes the reveal, and Tavus speaks it word for word. Your goal cards appear, Veronica walks the rundown in three short turns, and the call ends by about five minutes. If no reading lands by 4:00, the screen says "No reading this time" and keeps your goals. "Delete my data" wipes Forge's copy and hard-deletes the Tavus conversation.
 
 ## How it works
 
@@ -55,11 +55,11 @@ Six decisions, and the trade-off each one makes.
 
 **2. The reveal goes server to server, signed, and is spoken word for word.** `synthesize_profile` is delivered over HTTPS with an HMAC on the exact bytes, like a wax seal my server checks before it believes anything. The server answers plain text and Tavus reads it out exactly as written. Every failure past the signature check still answers 200 with a safe line ("I couldn't put that together cleanly, so I'd rather not guess"), because a status Tavus would retry or improvise around is worse than an honest sentence. Once the reading is in, the browser hands Forge the checked rundown as context with every code spelled out ("Jungian: I, N, T, J"), since text-to-speech reads LIE or SEE as words. The trade-off: a 20-second window, a fixed filler line while it runs, and a few hundred lines of server code instead of letting the model talk. The alternative, an app message, is dropped silently above 4 KB, and this is the one message in the call that can't vanish.
 
-**3. Two tools, with the evidence inside the one big call.** `save_goal` fires once or twice, early, as an app message with a filler so Forge keeps talking while it saves. The browser forwards your turns. Everything else rides inside `synthesize_profile`. I had a third tool for live "Noted" notes after every story and cut it: whether the model's own words also get spoken next to a filler-style tool call is undocumented, and I didn't want that unknown five times a call. The trade-off is a quieter screen during the stories.
+**3. Two tools, with the evidence inside the one big call.** `save_goal` fires once or twice, early, as an app message with a filler so Veronica keeps talking while it saves. The browser forwards your turns. Everything else rides inside `synthesize_profile`. I had a third tool for live "Noted" notes after every story and cut it: whether the model's own words also get spoken next to a filler-style tool call is undocumented, and I didn't want that unknown five times a call. The trade-off is a quieter screen during the stories.
 
-**4. A private room with server-set limits.** `require_auth` with a meeting token the browser passes to join explicitly, two participants, a 300-second cap, a 120-second join window, 10 seconds after you leave, one live call at a time (Tavus is the source of truth, not my store, so a lost End never blocks the next call), a passcode, and End on every path: the button, leaving the room, closing the tab, and Forge's own `end_call`. The trade-off: one person at a time, and turning the token off is a redeploy. For a demo on a free plan that's the right trade.
+**4. A private room with server-set limits.** `require_auth` with a meeting token the browser passes to join explicitly, two participants, a 300-second cap, a 120-second join window, 10 seconds after you leave, one live call at a time (Tavus is the source of truth, not my store, so a lost End never blocks the next call), and End on every path: the button, leaving the room, closing the tab, and Veronica's own `end_call`. There's no passcode: open the link and say hi. The trade-off: one person at a time, anyone with the link can start a call, and turning the token off is a redeploy. For a demo that's the right trade. A customer would put this behind their own sign-in.
 
-**5. Raven paces but never types, with consent and a one-switch EU mode.** Three audio and four visual questions about pauses, pace, energy and expressions. The prompt uses them to wait or to stay, and once a call Forge may name one with your own topic ("You lit up talking about the workshop. Want to stay there a sec?"). The type comes from the stories only; the corpus is explicit that tone and intensity don't type anyone. The one consent line says this in plain words, and `FORGE_EU_POLICY=always` adds `policy: eu` to every call so emotion recognition resolves the EU way. The trade-off: EU mode is one global switch, not per visitor. Enough to show the path, not enough for a product.
+**5. Raven paces but never types, with consent and a one-switch EU mode.** Three audio and four visual questions about pauses, pace, energy and expressions. The prompt uses them to wait or to stay, and once a call Veronica may name one with your own topic ("You lit up talking about the workshop. Want to stay there a sec?"). The type comes from the stories only; the corpus is explicit that tone and intensity don't type anyone. The one consent line says this in plain words, and `FORGE_EU_POLICY=always` adds `policy: eu` to every call so emotion recognition resolves the EU way. The trade-off: EU mode is one global switch, not per visitor. Enough to show the path, not enough for a product.
 
 **6. Rules in the prompt, no knowledge base, only the CC BY text shipped.** The whole method (the patterns, the TRC table, the hunch bank, the move kinds) is about 2,900 tokens of system prompt, and the corpus file in the repo holds only the 16 TRC rows, short glosses and label words. The trade-off: no retrieval, so no long definitions on demand, and two of my corpora stay out of the repo on purpose. In return the rules apply on every turn, nothing pulls type talk into the stories, and the prompt plus both tools sits about 150 tokens under Tavus's 5,000-token guidance.
 
@@ -97,7 +97,7 @@ The brief said three to four hours. My honest estimate going in was seven to nin
 - A staging PAL: config in git plus a freeze 24 hours before the demo does the job for one person. A customer gets staging.
 - Per-visitor EU detection: one env switch instead. The country header picks the crisis line only.
 - A knowledge base: one upload away once the call is stable.
-- Timing profiles, a presenter drawer, simulate and kill scripts: one arc switch, a plain text log behind `?presenter=1`, one Vitest test that signs the fixture, and one curl.
+- Timing profiles, a presenter view, a test mode, simulate and kill scripts: one arc switch, one Vitest test that signs the fixture, and one curl.
 - Stretch: a second reading after the settling question, server-sent events instead of the 3-second poll, and "where you lit up" on the result screen.
 
 ## What surprised me
@@ -105,7 +105,7 @@ The brief said three to four hours. My honest estimate going in was seven to nin
 - A tool call over 4 KB on the app message is dropped with no error. That one line in the docs is why the reading goes server to server.
 - The conversation block from the CLI can't join a private room: it never passes the meeting token. Two lines to patch, an hour to find.
 - Tavus lowers the call cap to your plan's maximum without saying so. On the Free plan my seven-minute arc would have ended at 5:00, mid-reveal, which is why five is the default.
-- The browser can't see a tool that's delivered over the API, so "Putting it together" on screen comes from spotting the filler line in Forge's speech.
+- The browser can't see a tool that's delivered over the API, so "Putting it together" on screen comes from spotting the filler line in Veronica's speech.
 
 The full log, ten items in three trends with one fix per trend, is in [FDE-NOTES.md](FDE-NOTES.md).
 
@@ -115,7 +115,7 @@ The full log, ten items in three trends with one fix per trend, is in [FDE-NOTES
 - It refuses a lot, on purpose. Forge's full method was designed for a 15 to 30 minute conversation. In five minutes, most unscripted calls end with "I won't guess a type yet" and the one question that would settle it. That's the feature.
 - Safety is a floor, not a guarantee. The prompt stops the type stuff on a crisis and gives the line for your country (Samaritans in the UK, call or text 988 in the US, findahelpline.com anywhere else), the same line the crisis card shows. The Tavus guardrail is a backup: it shows a card and tells the server to refuse any reading. Tavus says guardrails are not guaranteed, so the prompt and the server carry it.
 - English only, tested on desktop Chrome, one call at a time, age self-declared.
-- Data: your goals, the text of your turns, the reading and a debug record live 24 hours at Forge. Tavus keeps its transcript until "Delete my data". Nothing is recorded. Tavus's default retention isn't in the docs, so I'd confirm it before putting real clients on this.
+- Data: your goals, the text of your turns, the reading and a record of what the model sent live 24 hours at Forge. Tavus keeps its transcript until "Delete my data". Nothing is recorded. Tavus's default retention isn't in the docs, so I'd confirm it before putting real clients on this.
 
 ## Running it
 
@@ -126,18 +126,16 @@ You need Node 24, a Tavus API key, a public https URL Tavus can call, and a free
    - `TAVUS_API_KEY`: server only, sent to tavusapi.com and nowhere else.
    - `TOOL_HMAC_SECRET`: `openssl rand -hex 32`. The seal on the `synthesize_profile` call.
    - `PUBLIC_BASE_URL`: the production origin, because Tavus has to reach `/api/tools/synthesize-profile` and Vercel protects every non-production URL.
-   - `DEMO_PASSCODE`: what a visitor types before a call is created.
    - `FORGE_ARC`: 5 (the default) or 7.
-   - `FORGE_REQUIRE_AUTH`, `FORGE_EU_POLICY`, `FORGE_TEST_MODE`: the three switches described above.
+   - `FORGE_REQUIRE_AUTH` and `FORGE_EU_POLICY`: the two switches described above.
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN` (the Vercel Marketplace names), or the `UPSTASH_REDIS_REST_` pair. Locally with neither, a memory store runs. On Vercel with neither, the store-backed routes answer 503 instead of quietly splitting Tavus's request and the browser's poll across two servers.
    - `CORPUS_DIR` only if you rebuild `lib/corpus/forge-corpus.json`; the built file ships in the repo.
 3. `config/ids.json` holds the ids of my PAL, tools and guardrail on my Tavus account, and they only work with my key. To run on yours, delete `config/ids.json` and run `npm run setup:tavus`. It creates the guardrail, the two tools (with your URL and secret filled in) and the PAL from `config/`, attaches the tools, reads everything back and writes each id the moment it exists. It's safe to re-run after a partial failure, it refuses once `ids.json` holds a PAL, and later changes are hand-run PATCHes.
 4. `npm run typecheck`, `npm test` and `npm run build`. The tests cost zero Tavus minutes: they sign the Sam fixture and call the route handler directly.
-5. Deploy to Vercel production, connect Upstash from the Marketplace, set the env, redeploy. Open the URL, type the passcode, say hi.
+5. Deploy to Vercel production, connect Upstash from the Marketplace, set the env, redeploy. Open the URL and say hi.
 
-Two checks that cost no minutes:
+One check that costs no minutes:
 
-- `FORGE_TEST_MODE=true` creates the call as already ended, so no face joins. With `?presenter=1` you can replay the fixture events through the real handler and watch the chips, the log and the store fill.
 - The production curl signs the fixture with your secret and posts the same bytes (`--data-binary` keeps them exactly as signed):
 
   ```bash
@@ -148,4 +146,4 @@ Two checks that cost no minutes:
 
   Expect 200, `text/plain`, `x-forge-store: upstash` and the "I don't have enough of your stories yet" line, since that conversation has no stored turns. A wrong signature gets 401.
 
-A local `npm run dev` gives you the landing, the call and the goal chips, and `/preview` shows every screen state filled from the Sam fixture (it's a 404 in production). The reveal is posted to whatever `PUBLIC_BASE_URL` the tool was created with, so the full arc runs on the deployed URL. `?presenter=1` adds a plain log under the screens: every event, timings from Forge's first word, the time check, the watchdog, and the debug record (evidence sent and matched, which refusal fired on what count, which lines were replaced).
+A local `npm run dev` gives you the landing, the call and the goal chips. The reveal is posted to whatever `PUBLIC_BASE_URL` the tool was created with, so the full arc runs on the deployed URL.
