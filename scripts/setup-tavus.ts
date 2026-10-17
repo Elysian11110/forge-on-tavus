@@ -1,4 +1,4 @@
-// Creates Forge's Tavus resources once, from config/: the guardrail, the two tools, the two objective sets and the PAL.
+// Creates Forge's Tavus resources once, from config/: the guardrail, the two tools, the two objective sets, the pronunciation dictionary and the PAL.
 // Safe to re-run after a partial failure, since each id lands in config/ids.json the moment it
 // exists and is skipped next time. Refuses once ids.json holds the PAL; later changes are hand-run
 // PATCHes. Run from the project root:
@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { TavusError, tavusRequest } from "../lib/tavus";
 
-type IdKey = "guardrail" | "save_goal" | "synthesize_profile" | "objectives_open" | "objectives_speed" | "pal";
+type IdKey = "guardrail" | "save_goal" | "synthesize_profile" | "objectives_open" | "objectives_speed" | "pronunciation" | "pal";
 type Ids = Partial<Record<IdKey, string>>;
 type ToolName = "save_goal" | "synthesize_profile";
 
@@ -29,6 +29,7 @@ interface PalReadBack {
 interface PalConfig {
   _setup?: { attach_tools?: ToolName[] };
   guardrail_ids?: string[];
+  layers?: Record<string, unknown>;
   [field: string]: unknown;
 }
 
@@ -125,18 +126,27 @@ async function createObjectives(ids: Ids): Promise<void> {
   }
 }
 
+/** Spells type codes out letter by letter, so text-to-speech never reads LIE or SEE as words. */
+async function createPronunciation(ids: Ids): Promise<void> {
+  if (ids.pronunciation) return;
+  const created = await tavusRequest<{ pronunciation_dictionary_id?: string }>("POST", "/pronunciation-dictionaries", readConfig("pronunciation.json"));
+  if (!created?.pronunciation_dictionary_id) throw new Error("Create Pronunciation Dictionary returned no id");
+  saveId(ids, "pronunciation", created.pronunciation_dictionary_id);
+}
+
 /** Builds the PAL from config/pal.json with the prompt read in and the guardrail attached, creates it, then attaches both tools. */
 async function createPal(ids: Ids): Promise<string> {
   const { _setup: setup, ...palConfig } = readConfig("pal.json") as PalConfig;
   const toolIds = (setup?.attach_tools ?? TOOL_NAMES).map((name) => ids[name]);
-  if (!ids.guardrail || !ids.objectives_open || toolIds.some((id) => !id)) {
-    throw new Error("A guardrail, objectives or tool id is missing from config/ids.json");
+  if (!ids.guardrail || !ids.objectives_open || !ids.pronunciation || toolIds.some((id) => !id)) {
+    throw new Error("A guardrail, objectives, pronunciation or tool id is missing from config/ids.json");
   }
   const pal = {
     ...palConfig,
     system_prompt: readFileSync(configPath("forge-system-prompt.md"), "utf8"),
     guardrail_ids: [...new Set([...(palConfig.guardrail_ids ?? []), ids.guardrail])],
     objectives_id: ids.objectives_open,
+    layers: { ...palConfig.layers, tts: { pronunciation_dictionary_id: ids.pronunciation } },
   };
   const created = await tavusRequest<{ pal_id?: string }>("POST", "/pals", pal);
   if (!created?.pal_id) throw new Error("Create PAL returned no pal_id");
@@ -171,6 +181,7 @@ async function main(): Promise<void> {
   await createGuardrail(ids);
   await createTools(ids, baseUrl, secret);
   await createObjectives(ids);
+  await createPronunciation(ids);
   await printReadBack(await createPal(ids));
 }
 

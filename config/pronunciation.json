@@ -1,0 +1,236 @@
+{
+  "name": "Forge type codes",
+  "rules": [
+    {
+      "text": "ESTJ",
+      "pronunciation": "E, S, T, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ESTP",
+      "pronunciation": "E, S, T, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ESFJ",
+      "pronunciation": "E, S, F, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ESFP",
+      "pronunciation": "E, S, F, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ENTJ",
+      "pronunciation": "E, N, T, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ENTP",
+      "pronunciation": "E, N, T, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ENFJ",
+      "pronunciation": "E, N, F, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ENFP",
+      "pronunciation": "E, N, F, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ISTJ",
+      "pronunciation": "I, S, T, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ISTP",
+      "pronunciation": "I, S, T, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ISFJ",
+      "pronunciation": "I, S, F, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ISFP",
+      "pronunciation": "I, S, F, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "INTJ",
+      "pronunciation": "I, N, T, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "INTP",
+      "pronunciation": "I, N, T, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "INFJ",
+      "pronunciation": "I, N, F, J",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "INFP",
+      "pronunciation": "I, N, F, P",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ILE",
+      "pronunciation": "I, L, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "SEI",
+      "pronunciation": "S, E, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ESE",
+      "pronunciation": "E, S, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "LII",
+      "pronunciation": "L, I, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "EIE",
+      "pronunciation": "E, I, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "LSI",
+      "pronunciation": "L, S, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "SLE",
+      "pronunciation": "S, L, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "IEI",
+      "pronunciation": "I, E, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "SEE",
+      "pronunciation": "S, E, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ILI",
+      "pronunciation": "I, L, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "LIE",
+      "pronunciation": "L, I, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "ESI",
+      "pronunciation": "E, S, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "LSE",
+      "pronunciation": "L, S, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "EII",
+      "pronunciation": "E, I, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "IEE",
+      "pronunciation": "I, E, E",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "SLI",
+      "pronunciation": "S, L, I",
+      "type": "alias",
+      "case_sensitive": true,
+      "word_boundaries": true
+    },
+    {
+      "text": "Socionics",
+      "pronunciation": "so-see-ON-iks",
+      "type": "alias",
+      "case_sensitive": false,
+      "word_boundaries": true
+    }
+  ]
+}

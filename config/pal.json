@@ -20,15 +20,18 @@
     "llm": {
       "model": "tavus-gemma-4"
     },
+    "stt": {
+      "hotwords": "Veronica and Forge are names. Tavus is a company. People may mention the Enneagram, Socionics, cognitive functions like Ni or Fe, and types like INTJ or ESTP."
+    },
     "conversational_flow": {
       "turn_detection_model": "sparrow-2",
       "turn_taking_patience": "medium",
-      "pal_interruptibility": "medium",
+      "pal_interruptibility": "high",
       "idle_engagement": "patient"
     },
     "perception": {
       "perception_model": "raven-1",
-      "emotion_recognition": "auto",
+      "emotion_recognition": "full",
       "audio_awareness_queries": [
         "Does the user pause for a few seconds, or stop and restart a sentence, before answering?",
         "Does the user laugh, or does their voice get faster, louder or more animated on a particular topic?",
