@@ -69,7 +69,7 @@ Two deprecations I only found by reading belong under the same fix. `sparrow-1` 
 One fix for the group: the effective call cap in every create response and a stable error code on every limit, so cost guards can be built on fields instead of on string matching; plus safe defaults in the scaffolded create route (a param allowlist, server-set timers and an auth placeholder).
 
 **9. The call cap is lowered silently, and the price page can't tell you to what.** Hit.
-What happened: a `max_call_duration` above the plan's maximum is capped with no error and no field in the response saying so. On the Free plan that maximum is 5 minutes, so my 7-minute arc would have ended at 5:00, mid-reveal. The pricing page shows two developer price tables with different plan names and minute allowances, and the "100 minutes" I was told the account had matches neither. I made 5 the default arc and 7 a switch, with a line in `.env.example` saying 7 needs Starter or higher.
+What happened: a `max_call_duration` above the plan's maximum is capped with no error and no field in the response saying so. On the Free plan that maximum is 5 minutes, so my 7-minute arc would have ended at 5:00, mid-reveal. The pricing page shows two developer price tables with different plan names and minute allowances, and the "100 minutes" I was told the account had matches neither. The open 30-minute call is the default and `FORGE_ARC=5` is the speed-round switch; a 23-minute call ran uncut on the Trial plan, so the cap there is above 5 minutes, and `.env.example` says the open call needs a plan that allows 30-minute calls.
 Evidence: the warning on https://docs.tavus.io/sections/conversational-video-interface/conversation/customizations/call-duration-and-timeout and the two tables on https://www.tavus.io/pricing
 Who it bites: every demo on a Free or Starter plan, cut mid-sentence, and anyone trying to forecast a bill.
 Fix: return the effective cap in the create response (or answer 400 when the request asks for more than the plan allows), and one price table.
@@ -84,8 +84,9 @@ Two smaller ones on the same theme: `participant_absent_timeout` is a join windo
 
 ### From my live calls
 
-- Run 1 (terra, date): what Veronica said in the reveal, what the result screen showed (the type, or which part she wouldn't call yet), what the shutdown reason was, and what the GET returned after the hard delete.
-- Run 2 (gemma-4, date): the same, plus which model I kept and why.
+- Run 1 (terra, 2026-10-17, 5-minute speed round): stiff and formal, ended mid-reveal at the cap. Switched to gemma-4.
+- Run 2 (gemma-4, 2026-10-17, 8 minutes): warm but laughed at everything, wrapped up on a passing line after seven minutes, read "limited to what is real right now" as Se when the next clause was "and in the future", and said the TRC code "AST" out loud. Fixes: calm baseline, Objectives for the call order, a Sensing-or-Intuition question first, Jungian letters in the reveal.
+- Run 3 (gemma-4, 2026-10-17, 23 minutes): asked the same past-versus-present question about ten times because the objective could only complete on a one-sided answer and the answers were honestly both; commented on someone walking behind the camera; read "end_call" aloud from my own rundown text; the full report failed because the Forge extractor can't parse a call that long. Fixes: three questions per topic then take the leaning, no camera comments, tools used silently, the scorer runs without the extractor and a call-only report stands in.
 
 ## 2. Pilot plan: a coaching company
 
@@ -94,7 +95,7 @@ The customer: a coaching or wellness company that wants each client to have an o
 **Goal.** Prove in 30 days that a Forge-style call (a face, a reading the client trusts, and moves tied to their own goals) gets clients to act between sessions, at a cost per completed call the business can carry.
 
 **Scope.**
-- In: one PAL on the customer's own coach face and voice; their method's rules in the prompt and in the server checks; English; 20 to 30 pilot clients who opted in; five-minute calls in week one and seven-minute calls from week two if their plan allows; the result screen and "Delete my data"; a 30-minute check-in with me every week.
+- In: one PAL on the customer's own coach face and voice; their method's rules in the prompt and in the server checks; English; 20 to 30 pilot clients who opted in; five-minute calls in week one and seven-minute calls from week two if their plan allows; the result screen; a 30-minute check-in with me every week.
 - Out: memory across calls (designed, built in phase two if the pilot passes); languages other than English; mobile Safari (tested in week one, promised only after); anything that decides something about a client (hiring, placement, anything clinical).
 
 **Metrics and targets.**
@@ -109,7 +110,6 @@ The customer: a coaching or wellness company that wants each client to have an o
 | Time to first word | create to Veronica's first spoken line | under 10 seconds, median |
 | Cost per completed rundown | Tavus minutes at the plan rate, over completed calls | under $2.50 on Builder |
 | Safety | every crisis flag shows the card and withholds the reading | zero readings after a flag |
-| Deletion | "Delete my data" confirmed by Tavus | 100% |
 
 **Timeline.**
 - Week 0: their face and voice on the PAL, the prompt swapped for their method, the consent copy marked up by their legal, a staging PAL with one test call per change, the status page and the kill line in their runbook.

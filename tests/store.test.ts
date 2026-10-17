@@ -1,6 +1,6 @@
 // The memory backend, the one the tests and local dev run on: a repeat is stored once, the turn
-// cap holds, a call is forgotten after 24 hours, and Delete my data keeps the token until Tavus
-// confirms. The Upstash backend speaks the same interface against a live store, so it is checked
+// cap holds, a call is forgotten after 24 hours, and clearing keeps the token while deleting drops
+// it. The Upstash backend speaks the same interface against a live store, so it is checked
 // by the production curl instead.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -83,7 +83,7 @@ describe("the memory store", () => {
     expect(await store.getSession(CALL)).toBeNull();
   });
 
-  it("clears the call's data but keeps the token, so Delete my data can be sent again; deleteSession drops the token too", async () => {
+  it("clearSessionData keeps the token while dropping the data; deleteSession drops the token too", async () => {
     const store = getStore();
     await store.createSession(CALL, TOKEN);
     await store.addGoal(CALL, samGoals[0], null);

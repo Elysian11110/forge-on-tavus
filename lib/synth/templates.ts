@@ -11,7 +11,7 @@ export const REVEAL_MAX_WORDS = 60;
 /** Spoken under the crisis flag instead of any reading. */
 export const SPOKEN_CRISIS = "Let's leave the type stuff for today. You matter more than any of this.";
 
-/** F05: fewer than three answers with matched evidence, so no type at all. */
+/** F05: fewer than two answers with matched evidence, so no type at all. */
 export function spokenF05(goalsOnScreen: boolean): string {
   return (
     "Okay, honest answer: I don't have enough of your stories yet, and I'm not going to guess. Give me two more sometime and I'll call it." +

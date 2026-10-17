@@ -49,7 +49,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    if ((await listActiveConversations()).length > 0) return apiError("call_live", 409);
+    // Only Veronica's own live call blocks a new one; other conversations under the same key are not hers.
+    if ((await listActiveConversations()).some((row) => row.pal_id === palId)) return apiError("call_live", 409);
   } catch (error) {
     logFailure("session: live-call check", error);
     return apiError("tavus", 502);
