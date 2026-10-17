@@ -170,14 +170,10 @@ describe("the corpus file", () => {
     for (const value of strings) expect(value.length).toBeLessThan(300);
   });
 
-  it("keeps the plain glosses and the hunch bank in step with the prompt", () => {
+  it("keeps the plain glosses and the question bank in step with the prompt", () => {
     const prompt = read("../config/forge-system-prompt.md");
     for (const fn of FUNCTIONS) expect(prompt).toContain(`${fn}, ${corpus.functions[fn].plain}.`);
-    expect(prompt).toContain(SETTLE_QUESTIONS.perceiving_outer);
-    expect(prompt).toContain(SETTLE_QUESTIONS.thinking);
-    expect(prompt).toContain(SETTLE_QUESTIONS.feeling);
-    // The Si or Ni question is the general form of this line.
-    expect(prompt).toContain("were you going off what you've seen work before, or where you could see it heading?");
+    for (const question of Object.values(SETTLE_QUESTIONS)) expect(prompt).toContain(question);
   });
 });
 
@@ -330,9 +326,9 @@ describe("quote matching: no invented quote reaches the screen", () => {
 });
 
 describe("refusals only ever downgrade", () => {
-  it("F05: fewer than three answers with matched evidence gives no type at all, however sure the model is", () => {
+  it("F05: fewer than two answers with matched evidence gives no type at all, however sure the model is", () => {
     const args = argsWith({
-      evidence: [ev("P03", 0), ev("P03", 1), { pattern_id: "P03", key_words: "I never said any of this at all" }],
+      evidence: [ev("P03", 0), { pattern_id: "P03", key_words: "I never said any of this at all" }],
       enneagram_type: 5,
       enneagram_confidence: "high",
     });
@@ -351,7 +347,7 @@ describe("refusals only ever downgrade", () => {
       rundown_context: f05Rundown(true),
     });
     expect(spokenText).toBe(spokenF05(true));
-    expect(debug.triggers).toEqual([{ id: "F05", count: 2 }]);
+    expect(debug.triggers).toEqual([{ id: "F05", count: 1 }]);
   });
 
   it("F05 with no goal saved stops at the refusal: nothing on the screen to point to", () => {
@@ -368,8 +364,31 @@ describe("refusals only ever downgrade", () => {
     expect(debug).toMatchObject({ evidence_sent: 6, evidence_matched: 0, triggers: [{ id: "F05", count: 0 }] });
   });
 
-  it("F01: fewer than three answers behind the row's lens gives no TRC, Jungian or Socionics, and asks the settling question", () => {
-    const args = argsWith({ evidence: [ev("P03", 0), ev("P03", 1), ev("P06", 2), ev("P14", 3), ev("P11", 5), ev("P11", 6)], enneagram_type: 6, enneagram_confidence: "medium" });
+  it("calls a row two answers back, but no surer than medium, and caps the Enneagram the same way", () => {
+    const args = argsWith({ evidence: [ev("P03", 0), ev("P03", 1), ev("P06", 2), ev("P14", 3), ev("P11", 5), ev("P11", 6)], enneagram_type: 6, enneagram_confidence: "high" });
+    const { profile, debug } = run(args);
+    expect(profile).toMatchObject({
+      status: "complete",
+      triggers: [],
+      trc: "RNT",
+      jungian: "INTJ",
+      trc_confidence: "medium",
+      socionics_confidence: "medium",
+      enneagram: 6,
+      enneagram_confidence: "medium",
+      enneagram_labels: { triad: "head", fixation: "Cowardice", passion: "Fear", trap: "Security" },
+    });
+    expect(debug.triggers).toEqual([]);
+  });
+
+  it("one answer is enough to call a row and an Enneagram, both at low", () => {
+    const args = argsWith({ evidence: [ev("P03", 0), ev("P06", 2), ev("P12", 5)], enneagram_type: 3, enneagram_confidence: "high" });
+    const { profile } = run(args);
+    expect(profile).toMatchObject({ trc: "RNT", trc_confidence: "low", socionics_confidence: "low", enneagram: 3, enneagram_confidence: "low" });
+  });
+
+  it("F01: no answer behind the row's lens gives no TRC, Jungian or Socionics, and asks the settling question", () => {
+    const args = argsWith({ evidence: [ev("P06", 2), ev("P14", 3), ev("P11", 5), ev("P11", 6)], enneagram_type: 6, enneagram_confidence: "medium" });
     const { profile, debug } = run(args);
     expect(profile).toMatchObject({
       status: "partial",
@@ -383,13 +402,11 @@ describe("refusals only ever downgrade", () => {
       trc_confidence: "insufficient",
       socionics_confidence: "insufficient",
       enneagram: 6,
-      enneagram_labels: { triad: "head", fixation: "Cowardice", passion: "Fear", trap: "Security" },
-      settle_question: SETTLE_QUESTIONS.perceiving_inner,
     });
-    expect(profile.spoken_reveal).toBe(f01Reveal(SETTLE_QUESTIONS.perceiving_inner));
-    expect(debug.triggers).toEqual([{ id: "F01", count: 2 }]);
+    expect(profile.settle_question).not.toBeNull();
+    expect(profile.spoken_reveal).toBe(f01Reveal(profile.settle_question ?? ""));
+    expect(debug.triggers).toEqual([{ id: "F01", count: 0 }]);
     expect(profile.rundown_context).toContain("no type called yet");
-    expect(profile.rundown_context).toContain("When they answer, thank them");
     expect(profile.rundown_context).not.toContain("Jungian:");
   });
 
@@ -398,7 +415,7 @@ describe("refusals only ever downgrade", () => {
     expect(profile.trc).toBeNull();
     expect(profile.triggers).toContain("F01");
     expect(debug.triggers[0]).toEqual({ id: "F01", count: 3 });
-    expect(profile.spoken_reveal).toBe(f01Reveal(SETTLE_QUESTIONS.perceiving_inner));
+    expect(profile.spoken_reveal).toBe(f01Reveal(SETTLE_QUESTIONS.intuition));
   });
 
   it("F01 also follows the model's own insufficient, and picks the question for the likeliest lens", () => {
@@ -407,10 +424,10 @@ describe("refusals only ever downgrade", () => {
     expect(thinking.profile.settle_question).toBe(SETTLE_QUESTIONS.thinking);
   });
 
-  it("F04: fewer than two answers with matched P11 gives no Enneagram, and type 0 is never upgraded", () => {
-    const one = run(argsWith({ evidence: [...argsWith().evidence, ev("P11", 5)], enneagram_type: 5, enneagram_confidence: "high", enneagram_instinct: "social" }));
-    expect(one.profile).toMatchObject({ enneagram: null, enneagram_labels: null, enneagram_instinct: "undetermined", enneagram_confidence: "insufficient" });
-    expect(one.debug.triggers).toEqual([{ id: "F04", count: 1 }]);
+  it("F04: no answer with a matched thought pattern or drive gives no Enneagram, and type 0 is never upgraded", () => {
+    const none = run(argsWith({ enneagram_type: 5, enneagram_confidence: "high", enneagram_instinct: "social" }));
+    expect(none.profile).toMatchObject({ enneagram: null, enneagram_labels: null, enneagram_instinct: "undetermined", enneagram_confidence: "insufficient" });
+    expect(none.debug.triggers).toEqual([{ id: "F04", count: 0 }]);
 
     const zero = run(argsWith({ evidence: [ev("P03", 0), ev("P03", 1), ev("P03", 2), ev("P11", 4), ev("P11", 5), ev("P11", 6)] }));
     expect(zero.profile.enneagram).toBeNull();
@@ -434,12 +451,10 @@ describe("refusals only ever downgrade", () => {
     const turns = turnsOf(["I could see it all coming a mile away.", "Same with the move, I could see it all coming.", "Then a third time with the job offer."]);
     const repeat = { pattern_id: "P03" as const, key_words: "I could see it all coming" };
     const third = { pattern_id: "P03" as const, key_words: "a third time with the job" };
-    expect(run(argsWith({ evidence: [repeat, repeat, third] }), turns).profile.trc).toBe("RNT");
+    expect(run(argsWith({ evidence: [repeat, repeat, third] }), turns).profile.trc_confidence).toBe("high");
 
     const once = turnsOf(["I could see it all coming a mile away.", "Then a third time with the job offer.", "Nothing much else to say."]);
-    const { profile, debug } = run(argsWith({ evidence: [repeat, repeat, third] }), once);
-    expect(profile.status).toBe("insufficient");
-    expect(debug.triggers).toEqual([{ id: "F05", count: 2 }]);
+    expect(run(argsWith({ evidence: [repeat, repeat, third] }), once).profile.trc_confidence).toBe("medium");
   });
 
   it("withholds every reading under the crisis flag", () => {
@@ -607,7 +622,7 @@ describe("lint and templates", () => {
   });
 
   it("anchors need their source: under F01 lens falls back to the strongest matched pattern and drain to P14", () => {
-    const { profile, debug } = run(argsWith({ evidence: [ev("P03", 0), ev("P03", 1), ev("P06", 2), ev("P14", 3)] }));
+    const { profile, debug } = run(argsWith({ trc_code: "none", evidence: [ev("P03", 0), ev("P03", 1), ev("P06", 2), ev("P14", 3)] }));
     expect(profile.triggers).toContain("F01");
     expect(profile.goals[0].edge).toBe(edgeTemplate({ kind: "pattern", pattern: "P03" }));
     expect(profile.goals[0].watch_for).toBe(watchTemplate("P14", null, null));
@@ -618,6 +633,7 @@ describe("lint and templates", () => {
 
   it("under F01 two goals get different fallback lines: the next matched pattern, and the next watch source", () => {
     const args = argsWith({
+      trc_code: "none",
       evidence: [ev("P03", 0), ev("P03", 1), ev("P06", 2), ev("P14", 3), ev("P11", 5), ev("P11", 6)],
       enneagram_type: 6,
       enneagram_confidence: "medium",

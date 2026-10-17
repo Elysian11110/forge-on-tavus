@@ -35,7 +35,7 @@
   },
   {
     "name": "synthesize_profile",
-    "description": "Produce the one Forge rundown at the rundown stage, from the person's own stories, the goals saved with save_goal and the rules in your instructions. Forge's server checks every piece of evidence against what they actually said, reads the other frameworks from the TRC row and writes what gets spoken, so be honest: use none, 0 or insufficient when the stories don't show it.",
+    "description": "Produce the one Forge rundown at the rundown stage, from the person's own stories, the goals saved with save_goal and the rules in your instructions. Forge's server checks every piece of evidence against what they actually said, reads the other frameworks from the TRC row and writes what gets spoken, so be honest about how sure you are: low when one answer backs a pick, medium for two, high for three or more, and none, 0 or insufficient when nothing shows it.",
     "origin": "llm",
     "on_call": "static_filler",
     "static_filler": "Give me a sec, I'm putting it all together.",
@@ -55,7 +55,7 @@
         "trc_code": {
           "type": "string",
           "enum": ["RST", "RSF", "AST", "ASF", "RNT", "RNF", "ANT", "ANF", "RTS", "RTN", "ATS", "ATN", "RFS", "RFN", "AFS", "AFN", "none"],
-          "description": "The TRC row from the table in your instructions, or none when fewer than three different answers show the same lens."
+          "description": "The best-fitting TRC row from the table in your instructions whenever at least one answer shows how they take things in; none only when no answer shows a lens."
         },
         "trc_confidence": {
           "type": "string",
@@ -89,7 +89,7 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 9,
-          "description": "1 to 9 only if one thought pattern came back in at least two different answers; otherwise 0."
+          "description": "1 to 9 for the best fit when at least one answer shows a thought pattern or drive behind it; otherwise 0."
         },
         "enneagram_instinct": {
           "type": "string",

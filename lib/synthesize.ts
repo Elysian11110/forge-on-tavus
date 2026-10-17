@@ -56,10 +56,12 @@ const KEY_WORDS_MIN = 3;
 const KEY_WORDS_MAX = 12;
 const CAP = { how_you_work: 200, goal_short: 60, goal: 90, strength_line: 110, blind_spot_line: 110, move: 100 };
 
-// The refusal floors, each counted in different answers with matched evidence.
-const MIN_ANSWERS_FOR_ANY_TYPE = 3; // F05, any matched evidence
-const MIN_LENS_ANSWERS_FOR_TRC = 3; // F01, evidence behind the row's lens
-const MIN_P11_ANSWERS_FOR_ENNEAGRAM = 2; // F04, a thought pattern that keeps coming back
+// The floors, each counted in different answers with matched evidence. Above a floor the call
+// stands, and how sure it may sound grows with the answers behind it (confidenceCap).
+const MIN_ANSWERS_FOR_ANY_TYPE = 2; // F05, any matched evidence
+const MIN_LENS_ANSWERS_FOR_TRC = 1; // F01, evidence behind the row's lens
+const MIN_ANSWERS_FOR_ENNEAGRAM = 1; // F04, a thought pattern (P11) or drive (P12) behind the type
+const ENNEAGRAM_PATTERNS: readonly PatternId[] = ["P11", "P12"];
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { insufficient: 0, low: 1, medium: 2, high: 3 };
 
@@ -98,7 +100,9 @@ interface Called {
   row: TrcRow | null;
   // The row the model named, kept for the tie-break on the settling question.
   modelRow: TrcRow | null;
+  trcConfidence: Confidence;
   enneagram: EnneagramEntry | null;
+  enneagramConfidence: Confidence;
   triggers: Debug["triggers"];
 }
 
@@ -214,6 +218,13 @@ function minConfidence(a: Confidence, b: Confidence): Confidence {
   return CONFIDENCE_RANK[a] <= CONFIDENCE_RANK[b] ? a : b;
 }
 
+/** One answer can carry at most low, two at most medium, three or more whatever the model said. */
+function confidenceCap(answers: number): Confidence {
+  if (answers >= 3) return "high";
+  if (answers === 2) return "medium";
+  return answers === 1 ? "low" : "insufficient";
+}
+
 function quotesFrom(matched: readonly MatchedEvidence[]): EvidenceQuote[] {
   const seen = new Set<string>();
   const quotes: EvidenceQuote[] = [];
@@ -230,21 +241,29 @@ function rotate<T>(list: readonly T[], goalIndex: number): T | null {
   return list.length === 0 ? null : list[goalIndex % list.length];
 }
 
-// F01 and F04 only ever take away. The model's row stands only when the model is sure and enough
-// different answers back its lens, and its Enneagram only when a thought pattern kept coming back.
+// F01 and F04 only ever take away. The model's row stands when the model names one and at least one
+// answer backs its lens, its Enneagram when an answer shows a thought pattern or drive behind it,
+// and neither may sound surer than the answers behind it.
 function applyRefusals(args: SynthesizeArgs, matched: readonly MatchedEvidence[]): Called {
   const modelRow = args.trc_code === "none" ? null : trcRow(args.trc_code);
   const lensCount = modelRow
     ? lensAnswers(matched, modelRow.lens)
     : Math.max(0, ...FUNCTIONS.map((fn) => lensAnswers(matched, fn)));
   const rowStands = modelRow !== null && args.trc_confidence !== "insufficient" && lensCount >= MIN_LENS_ANSWERS_FOR_TRC;
-  const p11Count = distinctAnswers(matched.filter((piece) => piece.pattern_id === "P11"));
-  const enneagramStands = args.enneagram_confidence !== "insufficient" && p11Count >= MIN_P11_ANSWERS_FOR_ENNEAGRAM;
+  const enneagramCount = distinctAnswers(matched.filter((piece) => ENNEAGRAM_PATTERNS.includes(piece.pattern_id)));
+  const enneagramStands = args.enneagram_confidence !== "insufficient" && enneagramCount >= MIN_ANSWERS_FOR_ENNEAGRAM;
   const enneagram = enneagramStands ? enneagramEntry(args.enneagram_type) : null;
   const triggers: Debug["triggers"] = [];
   if (!rowStands) triggers.push({ id: "F01", count: lensCount });
-  if (!enneagram) triggers.push({ id: "F04", count: p11Count });
-  return { row: rowStands ? modelRow : null, modelRow, enneagram, triggers };
+  if (!enneagram) triggers.push({ id: "F04", count: enneagramCount });
+  return {
+    row: rowStands ? modelRow : null,
+    modelRow,
+    trcConfidence: rowStands ? minConfidence(args.trc_confidence, confidenceCap(lensCount)) : "insufficient",
+    enneagram,
+    enneagramConfidence: enneagram ? minConfidence(args.enneagram_confidence, confidenceCap(enneagramCount)) : "insufficient",
+    triggers,
+  };
 }
 
 // A model line that passed, or the reason it did not.
@@ -419,8 +438,7 @@ function emptyProfile(status: ProfileStatus, spoken: string, rundown: string): P
 }
 
 function composeProfile(args: SynthesizeArgs, matched: readonly MatchedEvidence[], called: Called, reveal: Reveal, goals: BuiltGoal[]): Profile {
-  const { row, enneagram } = called;
-  const trcConfidence: Confidence = row ? args.trc_confidence : "insufficient";
+  const { row, enneagram, trcConfidence, enneagramConfidence } = called;
   // Socionics is read off the TRC row too, so it's never surer than TRC.
   const socionicsConfidence: Confidence = row ? minConfidence(args.socionics_confidence, trcConfidence) : "insufficient";
   const socionics =
@@ -442,7 +460,7 @@ function composeProfile(args: SynthesizeArgs, matched: readonly MatchedEvidence[
     enneagram: enneagram ? args.enneagram_type : null,
     enneagram_labels: enneagram ? { ...enneagram } : null,
     enneagram_instinct: enneagram ? args.enneagram_instinct : "undetermined",
-    enneagram_confidence: enneagram ? args.enneagram_confidence : "insufficient",
+    enneagram_confidence: enneagramConfidence,
     in_your_words: quotesFrom(matched),
     how_you_work: reveal.howYouWork,
     goals: goals.map((goal) => goal.card),
@@ -453,7 +471,7 @@ function composeProfile(args: SynthesizeArgs, matched: readonly MatchedEvidence[
       trcConfidence,
       socionics,
       enneagram: enneagram
-        ? { type: args.enneagram_type, labels: enneagram, instinct: args.enneagram_instinct, confidence: args.enneagram_confidence }
+        ? { type: args.enneagram_type, labels: enneagram, instinct: args.enneagram_instinct, confidence: enneagramConfidence }
         : null,
       whatISaw: row ? null : reveal.howYouWork,
       goals: goals.map((goal) => goal.rundown),

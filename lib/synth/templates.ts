@@ -39,25 +39,25 @@ export function calledReveal(howYouWork: string, callsign: string): string {
   return `Okay, here's what I'm seeing. ${asSentence(howYouWork)} That's the ${callsign} lens. What fits, and what doesn't?`;
 }
 
-/** F01: no type yet; ends on the hunch-bank question for the likeliest lens. */
+/** F01: no type yet; ends on the bank question for the likeliest lens. */
 export function f01Reveal(question: string): string {
   return `Okay, honest version: your stories didn't point one way often enough, so I won't guess a type yet. Here's the one question that would settle it: ${question}`;
 }
 
-// The hunch bank from the prompt, in general form: code cannot build the question on the person's
-// own example, so the Si or Ni question loses "that call" and the rest are as written.
+// The question bank from the prompt, word for word, one question per axis.
 export const SETTLE_QUESTIONS = {
-  perceiving_inner: "When you make a call, are you going off what you've seen work before, or where you can see it heading?",
-  perceiving_outer: "Are you all in on what's happening right now, or already playing out five ways it could go?",
-  thinking: "Does it have to make sense to you first, or is it enough that it works?",
-  feeling: "Is it more where you stand with one person, or the mood of the whole room?",
+  intuition:
+    "When you picture that goal, is it one clear endgame you work back from, or does your brain spin up ten other versions?",
+  sensing: "Making a call, do you go off what's worked for you before, or what's happening right in front of you?",
+  thinking: "Something breaks. Do you need to get why, or just whatever fixes it fastest?",
+  feeling: "A big call that affects people you love: your own gut sense of right, or what keeps everyone okay?",
 } as const;
 
 const QUESTION_FOR_LENS: Record<Fn, string> = {
-  Si: SETTLE_QUESTIONS.perceiving_inner,
-  Ni: SETTLE_QUESTIONS.perceiving_inner,
-  Se: SETTLE_QUESTIONS.perceiving_outer,
-  Ne: SETTLE_QUESTIONS.perceiving_outer,
+  Si: SETTLE_QUESTIONS.sensing,
+  Se: SETTLE_QUESTIONS.sensing,
+  Ni: SETTLE_QUESTIONS.intuition,
+  Ne: SETTLE_QUESTIONS.intuition,
   Ti: SETTLE_QUESTIONS.thinking,
   Te: SETTLE_QUESTIONS.thinking,
   Fi: SETTLE_QUESTIONS.feeling,
@@ -66,7 +66,7 @@ const QUESTION_FOR_LENS: Record<Fn, string> = {
 
 /** The settling question for the likeliest lens; with no lens at all, the bank's first question. */
 export function settleQuestionFor(lens: Fn | null): string {
-  return lens ? QUESTION_FOR_LENS[lens] : SETTLE_QUESTIONS.perceiving_inner;
+  return lens ? QUESTION_FOR_LENS[lens] : SETTLE_QUESTIONS.intuition;
 }
 
 export const MOVE_LABELS: Record<MoveKind, string> = {
