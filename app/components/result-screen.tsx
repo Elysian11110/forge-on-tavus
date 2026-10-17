@@ -5,6 +5,7 @@ import { AllGone } from "@/app/components/all-gone";
 import { StatusLine, Wordmark } from "@/app/components/brand";
 import { CrisisCard } from "@/app/components/crisis-card";
 import { DeleteMyData } from "@/app/components/delete-my-data";
+import { FullReport } from "@/app/components/full-report";
 import { GoalChips } from "@/app/components/goal-chips";
 import { NoReading } from "@/app/components/no-reading";
 import { Rundown } from "@/app/components/rundown";
@@ -56,12 +57,13 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
   );
 }
 
-/** The result page as it looks: the mark, the body, and the two quiet actions under it. */
-function ResultLayout({ body, actions }: { body: ReactNode; actions: ReactNode }) {
+/** The result page as it looks: the mark, the full report, the quick read, and the two quiet actions under it. */
+function ResultLayout({ report, body, actions }: { report: ReactNode; body: ReactNode; actions: ReactNode }) {
   return (
     <main className="min-h-dvh">
       <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-8">
         <Wordmark />
+        {report && <div className="mt-12 sm:mt-16">{report}</div>}
         <div className="mt-16 sm:mt-24">{body}</div>
         <div className="mt-24 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-line pt-8 pb-10">{actions}</div>
       </div>
@@ -70,7 +72,7 @@ function ResultLayout({ body, actions }: { body: ReactNode; actions: ReactNode }
 }
 
 export function ResultScreen(props: ResultScreenProps) {
-  const { synthesizing, ended, deleted, crisis } = props;
+  const { synthesizing, ended, deleted, crisis, profile } = props;
   const [waitOver, setWaitOver] = useState(false);
 
   // A reading can still land after the call ends, so the honest no-reading note waits a little first.
@@ -82,6 +84,7 @@ export function ResultScreen(props: ResultScreenProps) {
 
   return (
     <ResultLayout
+      report={!crisis && !deleted && profile?.status !== "withheld_for_safety" ? <FullReport session={props.session} /> : null}
       body={resultBody(props, waitOver)}
       actions={
         <>

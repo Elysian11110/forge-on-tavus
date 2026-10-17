@@ -11,6 +11,7 @@ import {
   type EndSessionResponse,
   type EventsRequest,
   type EventsResponse,
+  type ReportResponse,
   type SessionView,
 } from "@/lib/types";
 
@@ -102,6 +103,11 @@ export function sendEndBeacon(session: SessionRef): boolean {
   } catch {
     return false;
   }
+}
+
+/** POST /api/report: builds the full Forge report from what they said, or hands back the one already built. */
+export function fetchReport(session: SessionRef): Promise<RouteReply<ReportResponse>> {
+  return request("/api/report", postJson(endBody(session), session.sessionToken));
 }
 
 /** POST /api/session/delete: ends a live call, wipes Forge's copy and hard-deletes the Tavus conversation. */

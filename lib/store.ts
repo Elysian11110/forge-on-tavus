@@ -57,6 +57,9 @@ export interface ForgeStore {
   /** The text already returned for this tool_call_id, or null; Tavus retries a 5xx once with the same id. */
   getSpokenText(conversationId: string, toolCallId: string): Promise<string | null>;
   setSpokenText(conversationId: string, toolCallId: string, text: string): Promise<void>;
+  /** The full Forge report link built after the call, or null before it exists. */
+  getReportUrl(conversationId: string): Promise<string | null>;
+  setReportUrl(conversationId: string, url: string): Promise<void>;
   /** Marks the call ended; ending twice is fine. */
   endSession(conversationId: string): Promise<void>;
   /** Removes what Forge kept of the call but keeps the token, so Delete my data can be sent again until Tavus confirms. */
@@ -99,7 +102,7 @@ function isStoredTurn(value: unknown): value is StoredTurn {
 // Upstash: one Redis key per field, named forge:<conversationId>:<field>, plus one counter per address.
 
 const SESSION_FIELDS = ["token", "state"] as const;
-const DATA_FIELDS = ["crisis", "goals", "goal_calls", "turns", "turn_ids", "profile", "debug", "spoken"] as const;
+const DATA_FIELDS = ["crisis", "goals", "goal_calls", "turns", "turn_ids", "profile", "debug", "spoken", "report"] as const;
 type Field = (typeof SESSION_FIELDS)[number] | (typeof DATA_FIELDS)[number];
 
 function key(conversationId: string, field: Field): string {
@@ -250,6 +253,15 @@ class UpstashStore implements ForgeStore {
     await pipe.exec();
   }
 
+  async getReportUrl(conversationId: string): Promise<string | null> {
+    const url = await this.redis.get(key(conversationId, "report"));
+    return typeof url === "string" ? url : null;
+  }
+
+  async setReportUrl(conversationId: string, url: string): Promise<void> {
+    await this.redis.set(key(conversationId, "report"), url, { ex: STORE_TTL_SECONDS });
+  }
+
   async endSession(conversationId: string): Promise<void> {
     await this.redis.set(key(conversationId, "state"), "ended", { ex: STORE_TTL_SECONDS });
   }
@@ -277,6 +289,7 @@ interface MemoryRecord {
   profile: Profile | null;
   debug: Debug | null;
   spoken: Map<string, string>;
+  report: string | null;
 }
 
 interface MemoryTables {
@@ -296,6 +309,7 @@ function emptyRecord(): MemoryRecord {
     profile: null,
     debug: null,
     spoken: new Map(),
+    report: null,
   };
 }
 
@@ -394,6 +408,14 @@ class MemoryStore implements ForgeStore {
 
   async setSpokenText(conversationId: string, toolCallId: string, text: string): Promise<void> {
     this.write(conversationId).spoken.set(toolCallId, text);
+  }
+
+  async getReportUrl(conversationId: string): Promise<string | null> {
+    return this.read(conversationId)?.report ?? null;
+  }
+
+  async setReportUrl(conversationId: string, url: string): Promise<void> {
+    this.write(conversationId).report = url;
   }
 
   async endSession(conversationId: string): Promise<void> {
