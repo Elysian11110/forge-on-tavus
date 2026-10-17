@@ -88,9 +88,9 @@ export function ForgeApp({ crisisLine, arc, askPasscode, presenter, testMode, cl
 
   return (
     <CVIProvider>
-      <div className={presenter ? "pb-[34vh]" : undefined}>
+      <div className={presenter ? "pb-[44vh] lg:pb-[32vh]" : undefined}>
         {screen === "consent" && (
-          <ConsentScreen arc={arc} askPasscode={askPasscode} crisisLine={crisisLine} onStarted={start} />
+          <ConsentScreen arc={arc} askPasscode={askPasscode} onStarted={start} />
         )}
         {screen === "call" && session && (
           <CallScreen
