@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, type Dispatch, type ReactNode } from "react";
 import { useMeetingState } from "@daily-co/daily-react";
+import { AboutVeronica } from "@/app/components/about-veronica";
 import { AiChip, ForgeMark } from "@/app/components/brand";
 import { CallPanel } from "@/app/components/call-panel";
 import { VideoStage } from "@/app/components/video-stage";
@@ -36,9 +37,12 @@ function CallLayout({ voiceOnly, crisis, onEnd, stage, panel }: CallLayoutProps)
             <AiChip />
             {voiceOnly && <span className="type-label hidden text-quiet sm:inline">Voice only</span>}
           </div>
-          <button type="button" onClick={onEnd} className="line-btn">
-            End call
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <AboutVeronica />
+            <button type="button" onClick={onEnd} className="line-btn">
+              End call
+            </button>
+          </div>
         </header>
 
         <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8 lg:mt-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">

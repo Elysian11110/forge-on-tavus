@@ -1,28 +1,42 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 
-/** The blinking "Click me!" chip in the landing header, and the note it opens on why Veronica exists. It blinks on every visit until it is clicked. */
+// Whether the note has been opened this visit. The chip follows you from the landing into the
+// call and onto the result page until it is clicked once, then it is gone.
+const AboutContext = createContext<{ seen: boolean; markSeen: () => void }>({ seen: false, markSeen: () => {} });
+
+export function AboutVeronicaProvider({ children }: { children: ReactNode }) {
+  const [seen, setSeen] = useState(false);
+  return <AboutContext.Provider value={{ seen, markSeen: () => setSeen(true) }}>{children}</AboutContext.Provider>;
+}
+
+/** The blinking "Click me!" chip and the note it opens on why Veronica exists. Renders nothing once the note has been opened. */
 export function AboutVeronica() {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [seen, setSeen] = useState(false);
+  const { seen, markSeen } = useContext(AboutContext);
+  // The dialog stays mounted while it is open, even though the chip is gone the moment it is clicked.
+  const [open, setOpen] = useState(false);
+  if (seen && !open) return null;
 
-  function open() {
-    setSeen(true);
+  function show() {
+    setOpen(true);
     dialog.current?.showModal();
   }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={open}
-        aria-haspopup="dialog"
-        className={`type-label inline-flex h-9 items-center gap-2.5 border border-rule px-3 text-ink transition-colors hover:border-ember focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${seen ? "" : "animate-blink"}`}
-      >
-        <span aria-hidden className={`size-1.5 bg-ember ${seen ? "" : "animate-breathe"}`} />
-        Click me!
-      </button>
+      {!seen && (
+        <button
+          type="button"
+          onClick={show}
+          aria-haspopup="dialog"
+          className="type-label inline-flex h-9 animate-blink items-center gap-2.5 border border-rule px-3 text-ink transition-colors hover:border-ember focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+        >
+          <span aria-hidden className="size-1.5 animate-breathe bg-ember" />
+          Click me!
+        </button>
+      )}
 
       <dialog
         ref={dialog}
@@ -30,6 +44,10 @@ export function AboutVeronica() {
         onClick={(event) => {
           // A click on the backdrop lands on the dialog itself, not on the panel inside it.
           if (event.target === event.currentTarget) event.currentTarget.close();
+        }}
+        onClose={() => {
+          setOpen(false);
+          markSeen();
         }}
         className="m-auto w-[min(100%-2rem,40rem)] border border-rule bg-surface p-0 text-ink backdrop:bg-black/70"
       >

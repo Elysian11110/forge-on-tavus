@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { AboutVeronica } from "@/app/components/about-veronica";
 import { StatusLine, Wordmark } from "@/app/components/brand";
 import { CrisisCard } from "@/app/components/crisis-card";
 import { FullReport } from "@/app/components/full-report";
@@ -59,7 +60,10 @@ function ResultLayout({ report, body, actions }: { report: ReactNode; body: Reac
   return (
     <main className="min-h-dvh">
       <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-8">
-        <Wordmark />
+        <header className="flex items-center justify-between gap-4">
+          <Wordmark />
+          <AboutVeronica />
+        </header>
         {report && <div className="mt-12 sm:mt-16">{report}</div>}
         <div className="mt-16 sm:mt-24">{body}</div>
         <div className="mt-24 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-line pt-8 pb-10">{actions}</div>

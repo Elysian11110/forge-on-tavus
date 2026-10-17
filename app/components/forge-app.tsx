@@ -1,14 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef } from "react";
+import { AboutVeronicaProvider } from "@/app/components/about-veronica";
 import { CallScreen } from "@/app/components/call-screen";
 import { ConsentScreen } from "@/app/components/consent-screen";
 import { CVIProvider } from "@/app/components/cvi/components/cvi-provider";
 import { ResultScreen } from "@/app/components/result-screen";
 import { useFullReport } from "@/app/hooks/use-full-report";
 import { useSessionPoll } from "@/app/hooks/use-session-poll";
-import { endSession, sendEndBeacon, withRetries, type SessionRef } from "@/lib/client/api";
-import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding, type Screen } from "@/lib/client/forge-state";
+import {
+  endSession,
+  sendEndBeacon,
+  withRetries,
+  type SessionRef,
+} from "@/lib/client/api";
+import {
+  forgeReducer,
+  initialForgeState,
+  type ActiveSession,
+  type CallEnding,
+  type Screen,
+} from "@/lib/client/forge-state";
 import { mergeGoals } from "@/lib/client/goals";
 import type { Arc } from "@/lib/types";
 
@@ -48,10 +60,15 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   const goals = mergeGoals(view?.goals ?? [], state.goals);
   const crisis = state.crisis || Boolean(view?.crisis);
   // The full report starts as soon as a reading exists, so it is mostly built by the time the call ends.
-  const readingReady = !crisis && (profile?.status === "complete" || profile?.status === "partial");
+  const readingReady =
+    !crisis &&
+    (profile?.status === "complete" || profile?.status === "partial");
   const report = useFullReport(session, readingReady);
 
-  const start = useCallback((next: ActiveSession) => dispatch({ type: "started", session: next }), []);
+  const start = useCallback(
+    (next: ActiveSession) => dispatch({ type: "started", session: next }),
+    [],
+  );
 
   // End, the call controls, the room closing, the crisis card and the no-show timers all land here; the first one counts.
   const endedOnce = useRef(false);
@@ -69,7 +86,8 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   // round: a fresh load of /report or /veronica-talks starts at the landing and says /homepage.
   useEffect(() => {
     const { path, title } = SCREEN_PATHS[screen];
-    if (window.location.pathname !== path) window.history.replaceState(null, "", path);
+    if (window.location.pathname !== path)
+      window.history.replaceState(null, "", path);
     document.title = title;
   }, [screen]);
 
@@ -84,34 +102,36 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   }, [screen, session]);
 
   return (
-    <CVIProvider>
-      {screen === "consent" && <ConsentScreen arc={arc} onStarted={start} />}
-      {screen === "call" && session && (
-        <CallScreen
-          session={session}
-          goals={goals}
-          profile={profile}
-          crisis={crisis}
-          synthesizing={state.synthesizing}
-          noReading={state.noReading}
-          crisisLine={crisisLine}
-          dispatch={dispatch}
-          onEnd={endCall}
-        />
-      )}
-      {screen === "result" && session && ended && (
-        <ResultScreen
-          profile={profile}
-          goals={goals}
-          crisis={crisis}
-          synthesizing={state.synthesizing}
-          noReading={state.noReading}
-          ended={ended}
-          crisisLine={crisisLine}
-          report={report.build}
-          onRetryReport={report.retry}
-        />
-      )}
-    </CVIProvider>
+    <AboutVeronicaProvider>
+      <CVIProvider>
+        {screen === "consent" && <ConsentScreen arc={arc} onStarted={start} />}
+        {screen === "call" && session && (
+          <CallScreen
+            session={session}
+            goals={goals}
+            profile={profile}
+            crisis={crisis}
+            synthesizing={state.synthesizing}
+            noReading={state.noReading}
+            crisisLine={crisisLine}
+            dispatch={dispatch}
+            onEnd={endCall}
+          />
+        )}
+        {screen === "result" && session && ended && (
+          <ResultScreen
+            profile={profile}
+            goals={goals}
+            crisis={crisis}
+            synthesizing={state.synthesizing}
+            noReading={state.noReading}
+            ended={ended}
+            crisisLine={crisisLine}
+            report={report.build}
+            onRetryReport={report.retry}
+          />
+        )}
+      </CVIProvider>
+    </AboutVeronicaProvider>
   );
 }

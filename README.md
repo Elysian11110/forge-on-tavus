@@ -74,7 +74,6 @@ Tavus bills from create to end. A full 30-minute call is about $9 on the Growth 
 
 - Not clinical: no diagnoses, no decisions about other people, never for hiring. On a crisis she drops the type talk and gives the line for your country.
 - English only, one call at a time, desktop Chrome. Your goals, turns and reading live 24 hours at Forge; the full report lives only in its link.
-- The build log, ten Tavus friction points and a pilot plan are in [FDE-NOTES.md](FDE-NOTES.md).
 
 ## Running it
 
