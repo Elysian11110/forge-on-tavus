@@ -7,14 +7,14 @@
     "attach_tools": ["save_goal", "synthesize_profile"],
     "ids_written_to": "config/ids.json"
   },
-  "pal_name": "Forge",
+  "pal_name": "Veronica",
   "system_prompt": "",
   "pipeline_mode": "full",
   "default_face_id": "rc9cff32ceba",
   "languages": ["en"],
   "disclosure_type": "always",
   "verbal_disclosure": "Quick heads up, I'm an AI. I watch for stuff like pauses so I know when to give you room.",
-  "visual_disclosure": "You're talking with Forge, an AI. It reads expressions and tone to pace the chat, never to decide your type.",
+  "visual_disclosure": "You're talking with Veronica, an AI that reads expressions and tone to pace the chat, never to decide your type.",
   "guardrail_ids": [],
   "layers": {
     "llm": {
