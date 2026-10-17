@@ -387,3 +387,32 @@ export function pinReport(engine: SiteReport, profile: Profile | null, goals: Go
     systems,
   });
 }
+
+// What the systems only the Forge engine reads say when it never answered.
+const NOT_READ_YET = "Forge's engine didn't get to this one on this call. Talk with Veronica again to fill it in.";
+
+/**
+ * The report from the call alone: the pinned Jungian, Socionics and Enneagram cards, the goals and
+ * the person's words, with the engine-only systems left honest. Used only when the Forge engine
+ * failed, so the person still leaves with a report instead of an error.
+ */
+export function callOnlyReport(profile: Profile, goals: Goal[]): SiteReport {
+  const blank: SiteSystem = { code: "-", justification: NOT_READ_YET };
+  const row = profile.trc ? trcRow(profile.trc) : null;
+  const engine: SiteReport = {
+    headline: row ? fallbackHeadline(profile, row) : "Your Forge report",
+    summary: profile.how_you_work.trim() ? asSentence(profile.how_you_work) : row ? howYouWorkFromRow(row) : NOT_READ_YET,
+    method: "phases",
+    systems: {
+      mbti: blank,
+      socionics: blank,
+      enneagram: blank,
+      temperaments: blank,
+      moralAlignment: blank,
+      attitudinalPsyche: blank,
+      bigFive: blank,
+    },
+  };
+  return pinReport(engine, profile, goals);
+}
+

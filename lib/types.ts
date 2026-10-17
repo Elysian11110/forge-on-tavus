@@ -2,6 +2,8 @@
 // store keeps, what the browser sends and gets back, and what Tavus posts to the signed route.
 // Wire names stay snake_case because Tavus and the result screen read them as they are.
 
+import type { ReportPreview } from "@/lib/report/site";
+
 // Fixed lists: runtime arrays so zod and code can check against them, with the unions read off them.
 
 export const TRC_CODES = [
@@ -358,4 +360,5 @@ export interface EndSessionResponse {
 // POST /api/report 200: the full Forge report, as a link to the Forge site's shared-report page.
 export interface ReportResponse {
   url: string;
+  preview: ReportPreview;
 }

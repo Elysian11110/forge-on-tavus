@@ -8,7 +8,7 @@ import { POST } from "@/app/api/report/route";
 import { contradicts, enginePhase, pinReport, readingLine, calledType } from "@/lib/report/compose";
 import { FORGE_SITE, decodeReport, encodedFromUrl, reportUrl, type SiteReport } from "@/lib/report/site";
 import { getStore } from "@/lib/store";
-import type { Debug, Goal, Profile } from "@/lib/types";
+import type { Debug, Goal, Profile, ReportResponse } from "@/lib/types";
 import { SESSION_HEADER } from "@/lib/types";
 
 const CALL = "c_forge_fixture_report";
@@ -350,13 +350,38 @@ describe("POST /api/report", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("keeps the crisis, token and engine-failure answers", async () => {
+  it("keeps the crisis and token answers, and an engine failure still leaves them with a report", async () => {
     await seed();
     expect((await post(null)).status).toBe(403);
     expect((await post("another-token")).status).toBe(403);
+
     engineAnswers({ error: "Could not parse result" });
-    expect((await post()).status).toBe(502);
+    const fallback = await post();
+    expect(fallback.status).toBe(200);
+    const { url, preview } = (await fallback.json()) as ReportResponse;
+    expect(preview.types).toEqual([
+      { label: "Jungian", code: "ESTP" },
+      { label: "Socionics", code: "SLE" },
+      { label: "Enneagram", code: expect.stringMatching(/^1/) },
+    ]);
+    expect(decodeReport(encodedFromUrl(url) ?? "")?.systems.mbti.code).toBe("ESTP");
+    // The call-only report is not kept, so asking again gives the engine another go.
+    expect(await getStore().getReportUrl(CALL)).toBeNull();
+
     await getStore().setCrisis(CALL);
     expect((await post()).status).toBe(403);
+  });
+
+  it("scores the words without the extractor when it can't parse a long call", async () => {
+    await seed();
+    fetchMock.mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === `${FORGE_SITE}/api/enneagram-extract`) return Response.json({ error: "Failed to parse extraction" });
+      if (url === `${FORGE_SITE}/api/unified-score`) return Response.json({ result: engine });
+      throw new Error(`unexpected fetch ${url}`);
+    });
+    const reply = await post();
+    expect(reply.status).toBe(200);
+    expect(await getStore().getReportUrl(CALL)).not.toBeNull();
   });
 });

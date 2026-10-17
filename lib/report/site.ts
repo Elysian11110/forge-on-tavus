@@ -117,3 +117,31 @@ export function encodedFromUrl(url: string): string | null {
   const prefix = `${FORGE_SITE}/r?d=`;
   return url.startsWith(prefix) ? url.slice(prefix.length) : null;
 }
+
+/** What the result page draws before the link is opened: the headline, the summary, a few bullets and the three type codes. */
+export interface ReportPreview {
+  headline: string;
+  summary: string;
+  bullets: string[];
+  types: { label: string; code: string }[];
+}
+
+const PREVIEW_BULLETS = 3;
+const PREVIEW_TYPES: { key: SiteSystemKey; label: string }[] = [
+  { key: "mbti", label: "Jungian" },
+  { key: "socionics", label: "Socionics" },
+  { key: "enneagram", label: "Enneagram" },
+];
+
+export function previewOf(report: SiteReport): ReportPreview {
+  return {
+    headline: report.headline,
+    summary: report.summary,
+    bullets: (report.summaryBullets ?? []).slice(0, PREVIEW_BULLETS),
+    types: PREVIEW_TYPES.flatMap(({ key, label }) => {
+      const code = report.systems[key].code.trim();
+      return code && code !== "-" ? [{ label, code }] : [];
+    }),
+  };
+}
+
