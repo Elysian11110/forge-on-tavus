@@ -23,12 +23,17 @@ export function ForgeMark({ size = 28 }: { size?: number }) {
   );
 }
 
+/** The mark is the way home from any screen; leaving a live call this way ends it, since the page unloads. */
 export function Wordmark() {
   return (
-    <p className="flex items-center gap-2.5 text-[22px] font-medium tracking-[-0.03em] text-ink">
+    <a
+      href="/homepage"
+      aria-label="Forge home"
+      className="inline-flex items-center gap-2.5 text-[22px] font-medium tracking-[-0.03em] text-ink hover:text-ember-hot focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember"
+    >
       <ForgeMark />
       Forge
-    </p>
+    </a>
   );
 }
 
