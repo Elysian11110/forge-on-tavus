@@ -11,7 +11,7 @@ import { asSentence, confidenceWord } from "@/lib/synth/templates";
 export const RUNDOWN_MAX_BYTES = 1500;
 
 const HEADER =
-  "Checked rundown from Forge's server. The reveal is already spoken. In one short turn, in your own words, give the type in a sentence and the one move you'd try first, adding no type facts and saying type names only as they are spelled here. Then say the full report is on their screen, say a quick warm bye and call end_call.";
+  "Checked rundown from Forge's server. The reveal is already spoken. In one short turn, in your own words, give the type in a sentence and the one move you'd try first, adding no type facts. Name the type by its Jungian letters, said one by one as spelled here, and the lens name; never say the three-letter TRC code. Then say the full report is on their screen, say a quick warm bye and call end_call.";
 
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
