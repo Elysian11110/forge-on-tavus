@@ -1,38 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-// Once someone has opened it, the chip stops blinking, on later visits too. Storage can be
-// blocked (private windows, previews), so it only ever decides whether the chip blinks.
-const SEEN_KEY = "forge-about-seen";
-
-function readSeen(): boolean {
-  try {
-    return window.localStorage.getItem(SEEN_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function saveSeen(): void {
-  try {
-    window.localStorage.setItem(SEEN_KEY, "1");
-  } catch {
-    // The chip still stops blinking for this visit.
-  }
-}
-
-/** The blinking "more info" chip in the landing header, and the short note it opens on why Veronica exists. */
+/** The blinking "Click me!" chip in the landing header, and the note it opens on why Veronica exists. It blinks on every visit until it is clicked. */
 export function AboutVeronica() {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [seen, setSeen] = useState(true);
-
-  // Read after mount, so the server render and the first client render agree.
-  useEffect(() => setSeen(readSeen()), []);
+  const [seen, setSeen] = useState(false);
 
   function open() {
     setSeen(true);
-    saveSeen();
     dialog.current?.showModal();
   }
 
@@ -45,7 +21,7 @@ export function AboutVeronica() {
         className={`type-label inline-flex h-9 items-center gap-2.5 border border-rule px-3 text-ink transition-colors hover:border-ember focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember ${seen ? "" : "animate-blink"}`}
       >
         <span aria-hidden className={`size-1.5 bg-ember ${seen ? "" : "animate-breathe"}`} />
-        Click me for more info
+        Click me!
       </button>
 
       <dialog
