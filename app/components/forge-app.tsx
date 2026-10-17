@@ -7,14 +7,14 @@ import { CVIProvider } from "@/app/components/cvi/components/cvi-provider";
 import { ResultScreen } from "@/app/components/result-screen";
 import { useFullReport } from "@/app/hooks/use-full-report";
 import { useSessionPoll } from "@/app/hooks/use-session-poll";
-import { endSession, sendEndBeacon, worthRetrying, type SessionRef } from "@/lib/client/api";
+import { endSession, sendEndBeacon, withRetries, type SessionRef } from "@/lib/client/api";
 import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding, type Screen } from "@/lib/client/forge-state";
 import { mergeGoals } from "@/lib/client/goals";
 import type { Arc } from "@/lib/types";
 
 /** After the call, the poll keeps going this long for a reading that is still landing. */
 const RESULT_POLL_WINDOW_MS = 30_000;
-/** One retry of the end route, this long after a failed first try. */
+/** The pause between tries of the end route. */
 const END_RETRY_MS = 2000;
 
 /** Each screen has its own address, so the URL says where you are. */
@@ -30,12 +30,9 @@ export interface ForgeAppProps {
   arc: Arc;
 }
 
-/** Tells the server the call is over. The route leaves it live when Tavus could not end it, so one retry is worth it. */
+/** Tells the server the call is over. The route leaves it live when Tavus could not end it, so it gets three tries. */
 async function endOnServer(session: SessionRef): Promise<void> {
-  const reply = await endSession(session);
-  if (!worthRetrying(reply)) return;
-  await new Promise((resolve) => setTimeout(resolve, END_RETRY_MS));
-  await endSession(session);
+  await withRetries(() => endSession(session), END_RETRY_MS);
 }
 
 /** The whole visit: the landing, the call, the result. One reducer holds what happened; one poll reads the server's view. */

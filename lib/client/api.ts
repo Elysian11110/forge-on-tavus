@@ -28,9 +28,23 @@ export type RouteReply<T> =
 /** Relays and polls give up after this, so one hung request never holds back what is queued behind it. */
 const QUICK_TIMEOUT_MS = 8000;
 
-/** A network failure or a 5xx: the kind of miss a second try can fix. */
+/** A network failure or a 5xx: the kind of miss another try can fix. */
 export function worthRetrying(reply: RouteReply<unknown>): boolean {
   return !reply.ok && (reply.status === 0 || reply.status >= 500);
+}
+
+/** Every call to our routes gets this many tries before the screen says anything went wrong. */
+export const TRIES = 3;
+const RETRY_DELAY_MS = 1500;
+
+/** Runs a route call up to TRIES times, pausing between tries, and stops at the first reply that is not a network miss or a 5xx. */
+export async function withRetries<T>(call: () => Promise<RouteReply<T>>, delayMs = RETRY_DELAY_MS): Promise<RouteReply<T>> {
+  let reply = await call();
+  for (let attempt = 1; attempt < TRIES && worthRetrying(reply); attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    reply = await call();
+  }
+  return reply;
 }
 
 function errorCode(body: unknown): ApiErrorCode | null {

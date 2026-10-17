@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchReport, worthRetrying, type SessionRef } from "@/lib/client/api";
+import { fetchReport, withRetries, type SessionRef } from "@/lib/client/api";
 import type { ReportPreview } from "@/lib/report/site";
 
 /** The last turns relayed before the reveal can still be landing, so the build waits this long first. */
 const START_DELAY_MS = 3000;
-/** One quiet second try after a network miss or a 5xx, before the screen asks the person to try. */
+/** The pause between the three quiet tries, before the screen asks the person. */
 const RETRY_DELAY_MS = 4000;
 
 export type ReportBuild =
@@ -28,11 +28,7 @@ export function useFullReport(session: SessionRef | null, ready: boolean): { bui
   const run = useCallback(async () => {
     if (!session) return;
     setBuild({ kind: "building" });
-    let reply = await fetchReport(session);
-    if (worthRetrying(reply)) {
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-      reply = await fetchReport(session);
-    }
+    const reply = await withRetries(() => fetchReport(session), RETRY_DELAY_MS);
     if (reply.ok) setBuild({ kind: "ready", url: reply.data.url, preview: reply.data.preview });
     else if (reply.status === 422) setBuild({ kind: "not_enough" });
     else if (reply.status === 403) setBuild({ kind: "hidden" });

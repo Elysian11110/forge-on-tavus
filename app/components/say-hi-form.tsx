@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import { createSession, type RouteReply } from "@/lib/client/api";
+import { createSession, withRetries, type RouteReply } from "@/lib/client/api";
 import { checkDevices, type MicProblem } from "@/lib/client/devices";
 import type { ActiveSession } from "@/lib/client/forge-state";
 import type { CreateSessionResponse } from "@/lib/types";
@@ -55,7 +55,8 @@ export function SayHiForm({ onStarted }: { onStarted: (session: ActiveSession) =
     }
 
     setPhase("calling");
-    const reply = await createSession({ consent: true, firstName: firstName.trim() || undefined });
+    // Three tries: the create route ends any call a failed try left behind before it tries again.
+    const reply = await withRetries(() => createSession({ consent: true, firstName: firstName.trim() || undefined }));
     if (!reply.ok) {
       setProblem(failureText(reply));
       setPhase("idle");
