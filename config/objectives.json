@@ -18,7 +18,7 @@
     },
     {
       "objective_name": "how_they_take_things_in",
-      "objective_prompt": "Find how they take things in, using the bank's S or N, P01 or P02, and P03 or P04 questions tied to their own stories: going off what has worked before (Si), what is right in front of them (Se), one clear endgame (Ni), or many possibilities (Ne). Ask for real moments. Complete once one of the four is your best read, or after three questions on this, whichever comes first; mixed answers are fine, take the leaning.",
+      "objective_prompt": "Find how they take things in, using the bank's S or N, P01 or P02, and P03 or P04 questions tied to their own stories: going off what has worked before (Si), what is right in front of them (Se), one clear endgame (Ni), or many possibilities (Ne). Ask for real moments. On a mixed answer, do not re-ask: say both options back and ask which one won last time it happened. Complete after at most two questions on this: take the leaning, say it out loud, and move on.",
       "output_variables": [
         "perceiving_lens"
       ],
@@ -26,7 +26,7 @@
     },
     {
       "objective_name": "how_they_decide",
-      "objective_prompt": "Find how they decide, using the bank's P05 or P06 and P07 or P08 questions tied to their own stories: their own logic (Ti), what works and the facts (Te), their own sense of right (Fi), or what keeps the people around them okay (Fe). Ask for a real decision that mattered. Complete once one of the four is your best read, or after three questions on this, whichever comes first.",
+      "objective_prompt": "Find how they decide, using the bank's P05 or P06 and P07 or P08 questions tied to their own stories: their own logic (Ti), what works and the facts (Te), their own sense of right (Fi), or what keeps the people around them okay (Fe). Ask for a real decision that mattered. On a mixed answer, do not re-ask: say both options back and ask which one won last time it happened. Complete after at most two questions on this: take the leaning, say it out loud, and move on.",
       "output_variables": [
         "judging_function"
       ],
