@@ -2,8 +2,6 @@
 
 Forge is a website where you get on a Tavus video call with Veronica, the friend who knows way too much about personality types. You name a goal or two, tell her real stories for as long as it takes, and she tells you how you work across four frameworks, what that means for each goal, and one small move to try this week. A minute or two after you hang up, your full seven-system Forge report is ready too. Under it: Tavus CVI and a small Next.js server that checks everything the model says before Tavus says it out loud.
 
-Watch it: the Loom link goes here before Monday.
-
 ## Why I built this
 
 Forge is my own project. Before this take-home it was a voice agent, and I described it to friends as "I created my own voice agent that talks to you like a therapist and guesses your MBTI and enneagram". The method and the corpus are mine, and every type quiz stops at the label, so Forge gives you a move instead.
