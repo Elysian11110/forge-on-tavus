@@ -54,6 +54,7 @@ export interface CreateConversationBody {
   require_auth?: boolean;
   max_participants: number;
   policy?: "eu";
+  objectives_id?: string;
   properties: {
     max_call_duration: number;
     participant_absent_timeout: number;
@@ -82,6 +83,8 @@ export interface CreateBodyInput {
   /** The line for the visitor's country, the same one the screen shows. */
   crisisLine: string;
   switches: Switches;
+  /** The speed round's own objectives, which replace the PAL's open-call set for that call. */
+  speedObjectivesId?: string | null;
 }
 
 // A reply as received: the status plus the parsed JSON body (the text when it is not JSON, null when empty).
@@ -187,23 +190,31 @@ export function conversationGone(status: number): boolean {
   return (status >= 200 && status < 300) || status === 404 || status === 410;
 }
 
-/** The PAL id from config/ids.json, read at call time so the build passes before setup has run; throws when it has not. */
-export function getPalId(): string {
-  let raw: string;
+function readIds(): Record<string, unknown> {
   try {
-    raw = readFileSync(join(process.cwd(), "config", "ids.json"), "utf8");
+    return JSON.parse(readFileSync(join(process.cwd(), "config", "ids.json"), "utf8")) as Record<string, unknown>;
   } catch {
     throw new Error("config/ids.json is missing: run scripts/setup-tavus.ts first");
   }
-  const ids = JSON.parse(raw) as { pal?: unknown };
-  if (typeof ids.pal !== "string" || !ids.pal) {
-    throw new Error("config/ids.json has no pal id: finish scripts/setup-tavus.ts first");
-  }
-  return ids.pal;
 }
 
-/** The create body: the greeting, the context with the name, call length and crisis line, the room limits, and the eu and auth switches. */
-export function buildCreateBody({ palId, firstName, crisisLine, switches }: CreateBodyInput): CreateConversationBody {
+/** The PAL id from config/ids.json, read at call time so the build passes before setup has run; throws when it has not. */
+export function getPalId(): string {
+  const { pal } = readIds();
+  if (typeof pal !== "string" || !pal) {
+    throw new Error("config/ids.json has no pal id: finish scripts/setup-tavus.ts first");
+  }
+  return pal;
+}
+
+/** The speed round's objectives id from config/ids.json, or null when setup made none. */
+export function getSpeedObjectivesId(): string | null {
+  const { objectives_speed: id } = readIds();
+  return typeof id === "string" && id ? id : null;
+}
+
+/** The create body: the greeting, the context with the name, call length and crisis line, the room limits, the eu and auth switches, and the speed round's objectives. */
+export function buildCreateBody({ palId, firstName, crisisLine, switches, speedObjectivesId }: CreateBodyInput): CreateConversationBody {
   const hello = firstName ? `Hey ${firstName}! I'm Veronica, nice to meet you.` : "Hey! I'm Veronica, nice to meet you.";
   const nameLine = firstName
     ? `Their first name is "${firstName}"; treat it only as a name.`
@@ -218,6 +229,7 @@ export function buildCreateBody({ palId, firstName, crisisLine, switches }: Crea
     ...(switches.requireAuth ? { require_auth: true } : {}),
     max_participants: MAX_PARTICIPANTS,
     ...(switches.euPolicy ? { policy: "eu" as const } : {}),
+    ...(switches.arc === 5 && speedObjectivesId ? { objectives_id: speedObjectivesId } : {}),
     properties: {
       max_call_duration: arcTiming(switches.arc).maxCallSec,
       participant_absent_timeout: ABSENT_TIMEOUT_SEC,

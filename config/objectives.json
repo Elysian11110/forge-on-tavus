@@ -1,0 +1,98 @@
+{
+  "open": [
+    {
+      "objective_name": "small_talk",
+      "objective_prompt": "Chat about their day like a friend: react to one specific thing they said and ask one easy follow-up. Complete after at least two back-and-forths about their day or life right now.",
+      "output_variables": ["day_detail"],
+      "next_required_objective": "goal"
+    },
+    {
+      "objective_name": "goal",
+      "objective_prompt": "Ease from the small talk into what they are working toward right now, and call save_goal with their own words. Complete once save_goal has been called for at least one goal.",
+      "output_variables": ["goal"],
+      "next_required_objective": "sensing_or_intuition"
+    },
+    {
+      "objective_name": "sensing_or_intuition",
+      "objective_prompt": "Find out whether they take things in through what is concrete (what they have lived, what is in front of them) or through the bigger picture (where it is heading, what it could become). Ask the bank's S or N question tied to their goal, then ask for a real moment. An answer about the future or possibilities means intuition; one about facts, experience or the present means sensing. Complete only when a real moment in their own words clearly leans one way.",
+      "output_variables": ["perceiving_moment", "sensing_or_intuition"],
+      "next_conditional_objectives": {
+        "sensing_split": "If their moment leaned on concrete facts, past experience or what is in front of them",
+        "intuition_split": "If their moment leaned on the future, patterns or possibilities"
+      }
+    },
+    {
+      "objective_name": "sensing_split",
+      "objective_prompt": "Split going off what has worked before (Si) from what is happening right now (Se) with the bank's P01 or P02 question, built on their story. Complete only when a real moment in their own words shows one side.",
+      "output_variables": ["sensing_moment", "si_or_se"],
+      "next_required_objective": "thinking_or_feeling"
+    },
+    {
+      "objective_name": "intuition_split",
+      "objective_prompt": "Split one clear endgame they work back from (Ni) from many versions spinning up (Ne) with the bank's P03 or P04 question, built on their story. Complete only when a real moment in their own words shows one side.",
+      "output_variables": ["intuition_moment", "ni_or_ne"],
+      "next_required_objective": "thinking_or_feeling"
+    },
+    {
+      "objective_name": "thinking_or_feeling",
+      "objective_prompt": "Find out whether they decide by logic and what works (thinking) or by values and people (feeling). Ask for a real decision that mattered to them recently. An answer only about speed or acting fast does not count: ask again from a new scene. Complete only when a real moment in their own words leans one way.",
+      "output_variables": ["decision_moment", "thinking_or_feeling"],
+      "next_conditional_objectives": {
+        "thinking_split": "If their decision leaned on logic, results or what works",
+        "feeling_split": "If their decision leaned on values, people or how it felt"
+      }
+    },
+    {
+      "objective_name": "thinking_split",
+      "objective_prompt": "Split needing it to make sense by their own logic (Ti) from going by what works and the facts (Te) with the bank's P05 or P06 question, built on their story. Complete only when a real moment in their own words shows one side.",
+      "output_variables": ["thinking_moment", "ti_or_te"],
+      "next_required_objective": "frame"
+    },
+    {
+      "objective_name": "feeling_split",
+      "objective_prompt": "Split their own private sense of right (Fi) from what keeps the people around them okay (Fe) with the bank's P07 or P08 question, built on their story. Complete only when a real moment in their own words shows one side.",
+      "output_variables": ["feeling_moment", "fi_or_fe"],
+      "next_required_objective": "frame"
+    },
+    {
+      "objective_name": "frame",
+      "objective_prompt": "With the bank's P09 or P10 question, find out whether their view holds steady inside them or updates from the latest outside input. Complete when a real moment in their own words shows which.",
+      "output_variables": ["frame_moment", "holds_or_updates"],
+      "next_required_objective": "energy"
+    },
+    {
+      "objective_name": "energy",
+      "objective_prompt": "Find out what drains them fastest and what recharges them fastest, each with a real example in their own words.",
+      "output_variables": ["drain", "recharge"],
+      "next_required_objective": "enneagram"
+    },
+    {
+      "objective_name": "enneagram",
+      "objective_prompt": "With the bank's P11 and P12 questions, find the thought that keeps coming back and the drive behind their decisions. Complete when one of them shows up in a real moment in their own words.",
+      "output_variables": ["recurring_thought", "drive"],
+      "next_required_objective": "life"
+    },
+    {
+      "objective_name": "life",
+      "objective_prompt": "Catch up on their life one casual question at a time: where they are based and what they do, who is around them and what those people care about, a moment that stuck with them and what they took from it, and, if it fits, what they protect first when life gets packed. Complete after at least three of these have real answers.",
+      "output_variables": ["based_and_work", "people", "moment_that_stuck"],
+      "next_required_objective": "reveal"
+    },
+    {
+      "objective_name": "reveal",
+      "objective_prompt": "Say you are putting it all together and call synthesize_profile once, then hear their answer to the result and walk the rundown in one short turn before a warm bye. Complete once synthesize_profile has been called."
+    }
+  ],
+  "speed": [
+    {
+      "objective_name": "speed_goal",
+      "objective_prompt": "The greeting asked what they are working toward: call save_goal with their own words. Complete once save_goal has been called.",
+      "output_variables": ["goal"],
+      "next_required_objective": "speed_bank"
+    },
+    {
+      "objective_name": "speed_bank",
+      "objective_prompt": "Speed round: ask the bank questions in order, one quick either-or each with at most one probe, then call synthesize_profile when the bank is done or a time check arrives. Complete once synthesize_profile has been called."
+    }
+  ]
+}

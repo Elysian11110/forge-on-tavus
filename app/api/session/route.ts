@@ -21,6 +21,7 @@ import {
   createConversation,
   endConversation,
   getPalId,
+  getSpeedObjectivesId,
   listActiveConversations,
   TavusError,
   type CreatedConversation,
@@ -60,6 +61,7 @@ export async function POST(request: Request): Promise<Response> {
     firstName: cleanFirstName(body.firstName),
     crisisLine: crisisLineFor(request.headers.get("x-vercel-ip-country")),
     switches,
+    speedObjectivesId: switches.arc === 5 ? getSpeedObjectivesId() : null,
   });
 
   let created: CreatedConversation;

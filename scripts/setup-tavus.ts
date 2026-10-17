@@ -1,4 +1,4 @@
-// Creates Forge's Tavus resources once, from config/: the guardrail, the two tools and the PAL.
+// Creates Forge's Tavus resources once, from config/: the guardrail, the two tools, the two objective sets and the PAL.
 // Safe to re-run after a partial failure, since each id lands in config/ids.json the moment it
 // exists and is skipped next time. Refuses once ids.json holds the PAL; later changes are hand-run
 // PATCHes. Run from the project root:
@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { TavusError, tavusRequest } from "../lib/tavus";
 
-type IdKey = "guardrail" | "save_goal" | "synthesize_profile" | "pal";
+type IdKey = "guardrail" | "save_goal" | "synthesize_profile" | "objectives_open" | "objectives_speed" | "pal";
 type Ids = Partial<Record<IdKey, string>>;
 type ToolName = "save_goal" | "synthesize_profile";
 
@@ -113,15 +113,30 @@ async function createTools(ids: Ids, baseUrl: string, secret: string): Promise<v
   for (const tool of tools as { name: string }[]) await createTool(ids, tool);
 }
 
+/** The open call's objectives ride on the PAL; the speed round's replace them per call. */
+async function createObjectives(ids: Ids): Promise<void> {
+  const sets = readConfig("objectives.json") as Record<"open" | "speed", unknown[]>;
+  for (const name of ["open", "speed"] as const) {
+    const key = `objectives_${name}` as const;
+    if (ids[key]) continue;
+    const created = await tavusRequest<{ objectives_id?: string }>("POST", "/objectives", { data: sets[name] });
+    if (!created?.objectives_id) throw new Error(`Create Objectives returned no objectives_id for ${name}`);
+    saveId(ids, key, created.objectives_id);
+  }
+}
+
 /** Builds the PAL from config/pal.json with the prompt read in and the guardrail attached, creates it, then attaches both tools. */
 async function createPal(ids: Ids): Promise<string> {
   const { _setup: setup, ...palConfig } = readConfig("pal.json") as PalConfig;
   const toolIds = (setup?.attach_tools ?? TOOL_NAMES).map((name) => ids[name]);
-  if (!ids.guardrail || toolIds.some((id) => !id)) throw new Error("A guardrail or tool id is missing from config/ids.json");
+  if (!ids.guardrail || !ids.objectives_open || toolIds.some((id) => !id)) {
+    throw new Error("A guardrail, objectives or tool id is missing from config/ids.json");
+  }
   const pal = {
     ...palConfig,
     system_prompt: readFileSync(configPath("forge-system-prompt.md"), "utf8"),
     guardrail_ids: [...new Set([...(palConfig.guardrail_ids ?? []), ids.guardrail])],
+    objectives_id: ids.objectives_open,
   };
   const created = await tavusRequest<{ pal_id?: string }>("POST", "/pals", pal);
   if (!created?.pal_id) throw new Error("Create PAL returned no pal_id");
@@ -155,6 +170,7 @@ async function main(): Promise<void> {
   await tavusRequest("GET", "/tools?type=system");
   await createGuardrail(ids);
   await createTools(ids, baseUrl, secret);
+  await createObjectives(ids);
   await printReadBack(await createPal(ids));
 }
 
