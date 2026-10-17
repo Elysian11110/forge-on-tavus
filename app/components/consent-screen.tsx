@@ -1,16 +1,20 @@
 import type { ReactNode } from "react";
+import { AboutVeronica } from "@/app/components/about-veronica";
 import { Wordmark } from "@/app/components/brand";
 import { SayHiForm } from "@/app/components/say-hi-form";
 import type { ActiveSession } from "@/lib/client/forge-state";
 import type { Arc } from "@/lib/types";
 
-/** The landing as it looks: the mark, one headline, one subline, and the form beside it. */
+/** The landing as it looks: the mark and the more-info chip, one headline, one subline, and the form beside it. */
 function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
   return (
     <main className="relative min-h-dvh overflow-hidden">
       <div aria-hidden className="grid-faint pointer-events-none absolute inset-0" />
       <div className="relative mx-auto flex min-h-dvh w-full max-w-7xl flex-col px-4 py-6 sm:px-8 lg:px-12">
-        <Wordmark />
+        <header className="flex items-center justify-between gap-4">
+          <Wordmark />
+          <AboutVeronica />
+        </header>
 
         <div className="grid flex-1 grid-cols-[minmax(0,1fr)] content-center gap-10 py-8 sm:gap-12 sm:py-12 lg:grid-cols-12 lg:items-center lg:gap-8 lg:py-16">
           <div className="lg:col-span-7">
