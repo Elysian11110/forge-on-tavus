@@ -1,4 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0a0912"/>
-  <text x="34" y="47" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="500" font-size="44" fill="#7c5cfc">F</text>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="28" fill="#0a0a0c"/>
+  <defs>
+    <linearGradient id="spine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c93812"/>
+      <stop offset="0.5" stop-color="#ff6b3a"/>
+      <stop offset="1" stop-color="#c93812"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#spine)">
+    <rect x="18" y="58" width="15" height="12" rx="6"/>
+    <rect x="95" y="58" width="15" height="12" rx="6"/>
+    <rect x="39" y="50" width="16" height="28" rx="8"/>
+    <rect x="73" y="50" width="16" height="28" rx="8"/>
+    <rect x="56" y="30" width="16" height="68" rx="8"/>
+  </g>
 </svg>
