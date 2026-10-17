@@ -13,7 +13,7 @@ export function CrisisLine({ line }: { line: string }) {
     <>
       {line.split(/(116 123|988|findahelpline\.com)/).map((part, index) =>
         LINKS[part] ? (
-          <a key={index} href={LINKS[part]} className="font-medium underline underline-offset-4">
+          <a key={index} href={LINKS[part]} className="font-medium text-ink underline decoration-ember underline-offset-6">
             {part}
           </a>
         ) : (
@@ -24,21 +24,20 @@ export function CrisisLine({ line }: { line: string }) {
   );
 }
 
-/** Shown when the crisis guardrail fires: a calm daylight card, never type talk. */
+/** Shown when the crisis guardrail fires: calm, steel not ember, never type talk. The line gets its own big row so it is easy to tap. */
 export function CrisisCard({ line, onEnd }: { line: string; onEnd?: () => void }) {
   return (
-    <section role="alert" className="forge-day animate-rise rounded-card p-6 sm:p-8">
-      <h2 className="type-display text-3xl">Let&apos;s put the type stuff down for now.</h2>
-      <p className="mt-4 text-ink-body">
-        If things are heavy, talk to a person: <CrisisLine line={line} />. If you&apos;re in danger right now, call
-        your local emergency number.
+    <section role="alert" className="animate-rise border border-rule bg-surface p-6 sm:p-8">
+      <h2 className="text-3xl font-medium leading-[1.1] tracking-[-0.03em] text-ink sm:text-4xl">
+        Let&apos;s put the type stuff down for now.
+      </h2>
+      <p className="mt-6 text-ink-body">If things are heavy, talk to a person:</p>
+      <p className="mt-2 text-2xl leading-snug text-ink">
+        <CrisisLine line={line} />.
       </p>
+      <p className="mt-6 text-ink-body">If you&apos;re in danger right now, call your local emergency number.</p>
       {onEnd && (
-        <button
-          type="button"
-          onClick={onEnd}
-          className="mt-6 h-11 rounded-btn bg-ink px-5 text-page transition-opacity duration-150 hover:opacity-90"
-        >
+        <button type="button" onClick={onEnd} className="line-btn mt-8">
           End the call
         </button>
       )}

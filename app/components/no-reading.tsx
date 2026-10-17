@@ -12,10 +12,13 @@ const WHY_NO_READING: Record<CallEnding, string> = {
 /** The watchdog fired, the call never connected, or it ended without a reading: goals kept, nothing guessed. */
 export function NoReading({ goals, endedBy }: { goals: Goal[]; endedBy: CallEnding }) {
   return (
-    <section className="space-y-10">
+    <section className="space-y-14">
       <div>
-        <h1 className="type-display text-[length:clamp(2.75rem,9vw,5rem)] text-ink">No reading this time</h1>
-        <p className="mt-5 max-w-prose text-lg text-ink-body">
+        <h1 className="type-hero text-[length:clamp(3.25rem,11vw,6.5rem)] text-ink">
+          <span className="block">No reading</span>
+          <span className="type-outline block">this time.</span>
+        </h1>
+        <p className="mt-8 max-w-prose text-lg text-ink-body">
           {WHY_NO_READING[endedBy]}
           {goals.length > 0 && " Your goals are kept below."}
         </p>

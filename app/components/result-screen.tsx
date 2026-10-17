@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { AllGone } from "@/app/components/all-gone";
-import { StatusLine, TrcCredit, Wordmark } from "@/app/components/brand";
-import { CrisisCard, CrisisLine } from "@/app/components/crisis-card";
+import { StatusLine, Wordmark } from "@/app/components/brand";
+import { CrisisCard } from "@/app/components/crisis-card";
 import { DeleteMyData } from "@/app/components/delete-my-data";
 import { GoalChips } from "@/app/components/goal-chips";
 import { NoReading } from "@/app/components/no-reading";
@@ -11,8 +11,6 @@ import { Rundown } from "@/app/components/rundown";
 import type { SessionRef } from "@/lib/client/api";
 import type { CallEnding } from "@/lib/client/forge-state";
 import type { Goal, Profile } from "@/lib/types";
-
-const RESULT_FOOTER = "For getting to know yourself, not a test. Not a stand-in for a professional.";
 
 /** How long to wait for a reading after the call ends: longer if Forge had started putting it together. */
 const WAIT_IF_SYNTHESIZING_MS = 30_000;
@@ -43,7 +41,7 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
       <>
         <Rundown profile={profile} />
         {profile.goals.length === 0 && goals.length > 0 && (
-          <div className="mt-16">
+          <div className="mt-20">
             <GoalChips goals={goals} afterCall />
           </div>
         )}
@@ -52,10 +50,23 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
   }
   if (ended.by === "never_connected" || noReading || waitOver) return <NoReading goals={goals} endedBy={ended.by} />;
   return (
-    <div className="space-y-10">
+    <div className="space-y-14">
       <StatusLine text={synthesizing ? "Putting it together." : "Checking for your rundown."} />
       <GoalChips goals={goals} afterCall />
     </div>
+  );
+}
+
+/** The result page as it looks: the mark, the body, and the two quiet actions under it. */
+export function ResultLayout({ body, actions }: { body: ReactNode; actions: ReactNode }) {
+  return (
+    <main className="min-h-dvh">
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-8">
+        <Wordmark />
+        <div className="mt-16 sm:mt-24">{body}</div>
+        <div className="mt-24 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-line pt-8 pb-10">{actions}</div>
+      </div>
+    </main>
   );
 }
 
@@ -71,29 +82,18 @@ export function ResultScreen(props: ResultScreenProps) {
   }, [ended.at, synthesizing]);
 
   return (
-    <main className="forge-day min-h-dvh">
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <Wordmark />
-        <div className="mt-14">{resultBody(props, waitOver)}</div>
-
-        <footer className="mt-20 border-t border-line pt-8">
-          <p className="text-ink-body">
-            {RESULT_FOOTER} If things are heavy, talk to a person: <CrisisLine line={props.crisisLine} />.
-          </p>
-          <p className="mt-3 max-w-prose text-sm text-quiet">
-            <TrcCredit />
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-            {!deleted && <DeleteMyData session={props.session} onDeleted={props.onDeleted} log={props.log} />}
-            {!crisis && (
-              <button type="button" onClick={() => window.location.reload()} className="text-ink underline underline-offset-4">
-                Talk again
-              </button>
-            )}
-          </div>
-        </footer>
-      </div>
-    </main>
+    <ResultLayout
+      body={resultBody(props, waitOver)}
+      actions={
+        <>
+          {!crisis && (
+            <button type="button" onClick={() => window.location.reload()} className="line-btn">
+              Talk again
+            </button>
+          )}
+          {!deleted && <DeleteMyData session={props.session} onDeleted={props.onDeleted} log={props.log} />}
+        </>
+      }
+    />
   );
 }

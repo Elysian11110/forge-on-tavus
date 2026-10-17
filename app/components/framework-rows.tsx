@@ -9,18 +9,18 @@ const INSTINCT_WORDS: Partial<Record<string, string>> = corpus.enneagram_instinc
 function Row(props: { label: string; value: string | null; confidence: Confidence; children?: ReactNode }) {
   const word = confidenceWord(props.value ? props.confidence : "insufficient");
   return (
-    <div className="border-t border-line py-5">
+    <div className="border-t border-line py-6">
       <div className="flex items-baseline justify-between gap-4">
         <p className="type-label text-quiet">{props.label}</p>
-        <p className="type-label text-accent-ink">{word}</p>
+        <p className={`type-label ${props.value ? "text-ember" : "text-quiet"}`}>{word}</p>
       </div>
-      {props.value && <p className="mt-2 font-display text-2xl text-ink">{props.value}</p>}
-      {props.value && props.children && <div className="mt-2 text-ink-body">{props.children}</div>}
+      {props.value && <p className="mt-3 text-2xl font-medium tracking-[-0.02em] text-ink">{props.value}</p>}
+      {props.value && props.children && <div className="mt-3 text-ink-body">{props.children}</div>}
     </div>
   );
 }
 
-/** The four slots of the TRC row, each in plain words. */
+/** The four slots of the TRC row, each in Forge's plain words. */
 function Stack({ profile }: { profile: Profile }) {
   const slots = [
     ["lens", profile.lens],
@@ -29,14 +29,14 @@ function Stack({ profile }: { profile: Profile }) {
     ["drain", profile.drain],
   ] as const;
   return (
-    <dl className="mt-1 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+    <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
       {slots.map(([slot, fn]) =>
         fn ? (
           <div key={slot}>
-            <dt className="inline text-quiet">
-              {slot} {fn}:{" "}
+            <dt className="type-label normal-case tracking-[0.06em] text-quiet">
+              {slot} {fn}
             </dt>
-            <dd className="inline">{corpus.functions[fn].plain}</dd>
+            <dd className="mt-1">{corpus.functions[fn].plain}</dd>
           </div>
         ) : null,
       )}
@@ -57,24 +57,15 @@ export function FrameworkRows({ profile }: { profile: Profile }) {
       >
         <Stack profile={profile} />
       </Row>
-      <Row label="Jungian" value={profile.jungian} confidence={profile.trc_confidence}>
-        Read straight off your TRC row.
-      </Row>
+      <Row label="Jungian" value={profile.jungian} confidence={profile.trc_confidence} />
       <Row
         label="Socionics"
         value={profile.socionics ? `${profile.socionics}${profile.quadra ? ` · ${profile.quadra}` : ""}` : null}
         confidence={profile.socionics_confidence}
-      >
-        Read off your TRC row too, so never surer than TRC.
-      </Row>
+      />
       <Row label="Enneagram" value={profile.enneagram ? `Type ${profile.enneagram}` : null} confidence={profile.enneagram_confidence}>
         {labels && `${labels.triad} triad · fixation ${labels.fixation} · passion ${labels.passion} · trap ${labels.trap}`}
         {labels && instinct && ` · ${instinct}`}
-        {labels && (
-          <p className="mt-2 text-sm text-quiet">
-            These are the Enneagram&apos;s own old label words: a pattern you run, never a verdict on you.
-          </p>
-        )}
       </Row>
     </div>
   );

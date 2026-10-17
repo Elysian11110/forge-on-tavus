@@ -11,9 +11,21 @@ interface PresenterLogProps {
   debug: Debug | null;
 }
 
+/** The Debug record as four plain lines: what the model sent, what matched, what refused, what got replaced. */
+function debugLines(debug: Debug | null): [string, string][] {
+  if (!debug) return [["Debug record", "none yet"]];
+  const triggers = debug.triggers.map((trigger) => `${trigger.id} (${trigger.count})`).join(", ");
+  return [
+    ["Evidence matched", `${debug.evidence_matched} of ${debug.evidence_sent}`],
+    ["Never said", debug.unmatched.length > 0 ? debug.unmatched.join(" / ") : "none"],
+    ["Refusals", triggers || "none"],
+    ["Lines replaced", debug.replaced.length > 0 ? debug.replaced.join(", ") : "none"],
+  ];
+}
+
 /**
- * Behind ?presenter=1: raw events, timings and the Debug record, as plain text, pinned under the
- * screen so the face and the log share one view. No polish on purpose.
+ * Behind ?presenter=1: what the call is doing under the face. Raw events and timings on the left,
+ * the Debug record on the right, pinned under the screen so the face and the log share one view.
  */
 export function PresenterLog({ timing, clock, testMode, lines, debug }: PresenterLogProps) {
   const box = useRef<HTMLPreElement>(null);
@@ -22,26 +34,43 @@ export function PresenterLog({ timing, clock, testMode, lines, debug }: Presente
     if (box.current) box.current.scrollTop = box.current.scrollHeight;
   }, [lines]);
 
-  const header = [
-    "presenter log",
-    timing
-      ? `arc ${timing.arc} min · cap ${timing.maxCallSec}s · time check T0+${timing.timeCheckSec}s · watchdog T0+${timing.watchdogSec}s`
-      : "no call yet",
+  const tags = [
+    timing ? `arc ${timing.arc} min` : "no call yet",
+    timing ? `cap ${timing.maxCallSec}s` : null,
+    timing ? `time check T0+${timing.timeCheckSec}s` : null,
+    timing ? `watchdog T0+${timing.watchdogSec}s` : null,
     clock > 1 ? `clock x${clock}` : null,
     testMode ? "test mode" : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const text = [header, "", ...lines, "", `Debug record: ${debug ? JSON.stringify(debug, null, 2) : "none yet"}`].join("\n");
+  ].filter((tag): tag is string => tag !== null);
 
   return (
-    <section aria-label="Presenter log" className="fixed inset-x-0 bottom-0 z-30 border-t border-forge-border bg-forge-code">
-      <pre
-        ref={box}
-        className="mx-auto max-h-[32vh] w-full max-w-6xl overflow-auto whitespace-pre-wrap break-words px-4 py-3 font-mono text-xs leading-relaxed text-forge-muted sm:px-6"
-      >
-        {text}
-      </pre>
+    <section aria-label="Behind the scenes" className="fixed inset-x-0 bottom-0 z-30 max-h-[42vh] overflow-y-auto border-t border-rule bg-raised lg:max-h-none lg:overflow-visible">
+      <div className="mx-auto w-full max-w-[90rem] px-4 sm:px-8 lg:px-12">
+        <header className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-b border-line py-3">
+          <p className="stamp text-ink">Behind the scenes</p>
+          {tags.map((tag) => (
+            <span key={tag} className="font-mono text-xs text-quiet">
+              {tag}
+            </span>
+          ))}
+        </header>
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">
+          <pre
+            ref={box}
+            className="max-h-[22vh] overflow-auto whitespace-pre-wrap break-words py-3 font-mono text-xs leading-relaxed text-quiet"
+          >
+            {lines.length > 0 ? lines.join("\n") : "Events land here as the call runs."}
+          </pre>
+          <dl className="grid grid-cols-[auto_1fr] content-start gap-x-4 gap-y-1.5 border-t border-line py-3 font-mono text-xs lg:border-t-0 lg:border-l lg:pl-6">
+            {debugLines(debug).map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="text-quiet">{label}</dt>
+                <dd className="text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
     </section>
   );
 }

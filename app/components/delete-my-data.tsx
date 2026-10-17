@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { deleteSession, type SessionRef } from "@/lib/client/api";
 
-type Deletion = { kind: "idle" } | { kind: "busy" } | { kind: "failed"; message: string };
+export type Deletion = { kind: "idle" } | { kind: "confirming" } | { kind: "busy" } | { kind: "failed"; message: string };
 
 /** A 2xx from the hard delete, or Tavus saying it is already gone. */
 function tavusConfirmed(status: number | null): boolean {
@@ -16,7 +16,7 @@ interface DeleteMyDataProps {
   log: (line: string) => void;
 }
 
-/** The button that wipes Forge's copy and asks Tavus to hard-delete the conversation. */
+/** The quiet button that wipes Forge's copy and asks Tavus to hard-delete the conversation, after one "are you sure". */
 export function DeleteMyData({ session, onDeleted, log }: DeleteMyDataProps) {
   const [deletion, setDeletion] = useState<Deletion>({ kind: "idle" });
 
@@ -36,18 +36,45 @@ export function DeleteMyData({ session, onDeleted, log }: DeleteMyDataProps) {
     });
   }
 
+  return <DeleteMyDataView deletion={deletion} onAsk={() => setDeletion({ kind: "confirming" })} onCancel={() => setDeletion({ kind: "idle" })} onDelete={deleteMyData} />;
+}
+
+interface DeleteMyDataViewProps {
+  deletion: Deletion;
+  onAsk: () => void;
+  onCancel: () => void;
+  onDelete: () => void;
+}
+
+const QUIET_BUTTON = "min-h-11 text-quiet underline decoration-rule underline-offset-6 transition-colors duration-150 hover:text-ink";
+
+/** The delete control as it looks, with no state of its own. */
+export function DeleteMyDataView({ deletion, onAsk, onCancel, onDelete }: DeleteMyDataViewProps) {
+  if (deletion.kind === "confirming" || deletion.kind === "busy") {
+    const busy = deletion.kind === "busy";
+    return (
+      <div role="group" aria-label="Delete my data" className="flex basis-full flex-wrap items-center gap-x-6 gap-y-3">
+        <p className="text-ink">Delete everything from this call, here and at Tavus? You can&apos;t undo it.</p>
+        <div className="flex items-center gap-6">
+          <button type="button" onClick={onDelete} disabled={busy} className="line-btn">
+            {busy ? "Deleting" : "Yes, delete it"}
+          </button>
+          {!busy && (
+            <button type="button" onClick={onCancel} className={QUIET_BUTTON}>
+              Keep it
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
   return (
     <>
-      <button
-        type="button"
-        onClick={deleteMyData}
-        disabled={deletion.kind === "busy"}
-        className="h-11 rounded-btn border border-line px-5 text-ink transition-colors duration-150 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {deletion.kind === "busy" ? "Deleting..." : "Delete my data"}
+      <button type="button" onClick={onAsk} className={QUIET_BUTTON}>
+        Delete my data
       </button>
       {deletion.kind === "failed" && (
-        <p role="alert" className="basis-full text-accent-ink">
+        <p role="alert" className="basis-full text-ink">
           {deletion.message}
         </p>
       )}

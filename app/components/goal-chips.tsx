@@ -9,15 +9,18 @@ export function GoalChips({ goals, afterCall = false }: { goals: Goal[]; afterCa
   if (goals.length === 0 && afterCall) return null;
   return (
     <section aria-live="polite">
-      <h2 className="type-label text-quiet">You&apos;re working toward</h2>
+      <h2 className="stamp">You&apos;re working toward</h2>
       {goals.length === 0 ? (
-        <p className="mt-3 text-quiet">Your goals show up here as you say them.</p>
+        <p className="mt-4 text-quiet">Your goals show up here as you say them.</p>
       ) : (
-        <ul className="mt-3 flex flex-wrap gap-2">
+        <ul className="mt-4 flex flex-wrap gap-2.5">
           {goals.map((goal) => {
             const when = byWhenLabel(goal.by_when);
             return (
-              <li key={`${goal.goal_id}:${goal.goal}`} className="animate-pop-in rounded-full bg-surface px-4 py-2 text-ink">
+              <li
+                key={`${goal.goal_id}:${goal.goal}`}
+                className="animate-pop-in border border-rule bg-surface px-4 py-2.5 text-ink"
+              >
                 {goal.goal}
                 {when && <span className="text-quiet"> · {when}</span>}
               </li>

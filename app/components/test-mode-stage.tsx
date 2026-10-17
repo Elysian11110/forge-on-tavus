@@ -26,17 +26,13 @@ export function TestModeStage({ presenter, onEvent, log }: TestModeStageProps) {
   };
 
   return (
-    <div className="flex aspect-video flex-col justify-end gap-4 rounded-card bg-surface p-6 sm:p-8">
-      <p className="type-label text-accent-ink">Test mode</p>
-      <p className="max-w-md text-quiet">
+    <div className="flex aspect-[9/12] flex-col justify-end gap-5 p-6 sm:aspect-video sm:p-10">
+      <p className="stamp">Test mode</p>
+      <p className="max-w-md text-lg text-ink-body">
         Tavus created this call as already ended, so there&apos;s no face to join and no minutes are spent.
       </p>
       {presenter && (
-        <button
-          type="button"
-          onClick={replay}
-          className="h-10 self-start rounded-btn-sm border border-line px-4 text-ink transition-colors duration-150 hover:border-forge-violet"
-        >
+        <button type="button" onClick={replay} className="line-btn self-start">
           Replay fixture events
         </button>
       )}
