@@ -14,5 +14,9 @@ export const TRIGGER_LINES: Record<TriggerId, string> = {
 
 /** The context message Veronica gets at the time check, with the minutes since T0. */
 export function timeCheckText(elapsedMinutes: number): string {
-  return `Time check: about ${elapsedMinutes} minutes in. Let them finish, do your hunch check if you haven't yet, then call synthesize_profile.`;
+  return `Time check: about ${elapsedMinutes} minutes in. No new topics: let them finish, ask at most one more quick question, then call synthesize_profile.`;
 }
+
+/** The context message just before Tavus's hard cap, so the call ends on a goodbye and not mid-sentence. */
+export const WRAP_UP_TEXT =
+  "Wrap up now: under 30 seconds left. Finish your sentence, say a quick warm bye, then call end_call. No new questions.";

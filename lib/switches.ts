@@ -8,7 +8,7 @@ export interface Switches {
   euPolicy: boolean;
   /** FORGE_REQUIRE_AUTH=false drops require_auth; on otherwise. */
   requireAuth: boolean;
-  /** FORGE_ARC=7 for the seven-minute arc; 5 otherwise. */
+  /** FORGE_ARC=5 for the free trial's five-minute speed round; an open call otherwise. */
   arc: Arc;
 }
 
@@ -17,13 +17,13 @@ export function readSwitches(env: NodeJS.ProcessEnv = process.env): Switches {
   return {
     euPolicy: setting("FORGE_EU_POLICY") === "always",
     requireAuth: setting("FORGE_REQUIRE_AUTH") !== "false",
-    arc: setting("FORGE_ARC") === "7" ? 7 : 5,
+    arc: setting("FORGE_ARC") === "5" ? 5 : 30,
   };
 }
 
-/** The arc table: the call cap Tavus gets, when the browser sends the time check, and when it gives up waiting for a reading. */
+/** The arc table: the call cap Tavus gets, when the browser sends the time check, when it gives up waiting for a reading, and when it tells Veronica to say bye. */
 export function arcTiming(arc: Arc): SessionTiming {
-  return arc === 7
-    ? { arc: 7, maxCallSec: 600, timeCheckSec: 255, watchdogSec: 390 }
-    : { arc: 5, maxCallSec: 300, timeCheckSec: 165, watchdogSec: 240 };
+  return arc === 5
+    ? { arc: 5, maxCallSec: 300, timeCheckSec: 195, watchdogSec: 255, wrapUpSec: 265 }
+    : { arc: 30, maxCallSec: 1800, timeCheckSec: 1620, watchdogSec: 1710, wrapUpSec: 1760 };
 }

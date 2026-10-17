@@ -87,6 +87,7 @@ export function CallScreen(props: CallScreenProps) {
     joinedAt,
     sendContext,
     shouldNudge: () => !now.current.crisis && !now.current.profile && !now.current.synthesizing,
+    shouldWrapUp: () => !now.current.crisis,
     hasReading: () => now.current.profile !== null,
     isSynthesizing: () => now.current.synthesizing,
     onWatchdog: () => dispatch({ type: "watchdog" }),

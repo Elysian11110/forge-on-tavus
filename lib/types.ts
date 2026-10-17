@@ -54,8 +54,9 @@ export type TriggerId = (typeof TRIGGER_IDS)[number];
 
 export type ProfileStatus = "complete" | "partial" | "insufficient" | "withheld_for_safety";
 
-// Call length in minutes, from FORGE_ARC; 5 unless it says 7.
-export type Arc = 5 | 7;
+// Call length in minutes, from FORGE_ARC: 5 for the free trial's speed round, else 30, the open
+// call's backstop.
+export type Arc = 5 | 30;
 
 // Daily app messages from Tavus, read with useObservableEvent<T>.
 
@@ -165,7 +166,7 @@ export interface Profile {
   in_your_words: EvidenceQuote[];
   how_you_work: string;
   goals: ProfileGoal[];
-  /** F01 only: the hunch-bank question for the likeliest lens. */
+  /** F01 only: the bank question for the likeliest lens. */
   settle_question: string | null;
   /** At most 60 words; Tavus speaks it word for word. */
   spoken_reveal: string;
@@ -258,8 +259,8 @@ export const SIGNATURE_HEADER = "x-tavus-signature";
 
 export type StoreKind = "upstash" | "memory";
 
-// 400 bad_request or consent_required, 403 forbidden, 404 not_found, 409 call_live, 502 tavus,
-// 503 store_unavailable or not_configured.
+// 400 bad_request or consent_required, 403 forbidden, 404 not_found, 409 call_live, 502 tavus or
+// report_failed, 503 store_unavailable or not_configured.
 export type ApiErrorCode =
   | "bad_request"
   | "consent_required"
@@ -267,6 +268,7 @@ export type ApiErrorCode =
   | "not_found"
   | "call_live"
   | "tavus"
+  | "report_failed"
   | "store_unavailable"
   | "not_configured";
 
@@ -283,12 +285,14 @@ export interface CreateSessionRequest {
 // Browser timings for the arc, in seconds from T0, plus the call cap sent to Tavus.
 export interface SessionTiming {
   arc: Arc;
-  /** max_call_duration: 300 on the 5-minute arc, 600 on 7. */
+  /** max_call_duration: 300 on the speed round, 1800 as the open call's backstop. */
   maxCallSec: number;
-  /** When the time-check note goes to Veronica: 165 (2:45) or 255 (4:15). */
+  /** When the time-check note goes to Veronica: 195 (3:15) or 1620 (27:00). */
   timeCheckSec: number;
-  /** When "No reading this time" shows if nothing arrived: 240 (4:00) or 390 (6:30). */
+  /** When "No reading this time" shows if nothing arrived: 255 (4:15) or 1710 (28:30). */
   watchdogSec: number;
+  /** When the wrap-up note tells Veronica to say bye and end the call, before Tavus's hard cap: 265 (4:25) or 1760 (29:20). */
+  wrapUpSec: number;
 }
 
 // POST /api/session 200; meetingToken is null when require_auth is off.
@@ -360,4 +364,9 @@ export type DeleteSessionRequest = EndSessionRequest;
 export interface DeleteSessionResponse {
   deleted: true;
   tavusStatus: number | null;
+}
+
+// POST /api/report 200: the full Forge report, as a link to the Forge site's shared-report page.
+export interface ReportResponse {
+  url: string;
 }

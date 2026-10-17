@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { timeCheckText } from "@/lib/client/words";
+import { timeCheckText, WRAP_UP_TEXT } from "@/lib/client/words";
 import type { SessionTiming } from "@/lib/types";
 
 /** T0 falls back to join plus this, if Veronica has not spoken by then. */
@@ -18,6 +18,8 @@ export interface CallClockInput {
   sendContext: (text: string) => boolean;
   /** True while a time check still makes sense: no crisis, no reading, not already synthesizing. */
   shouldNudge: () => boolean;
+  /** True unless a crisis is under way: then the call ends only when they want it to. */
+  shouldWrapUp: () => boolean;
   hasReading: () => boolean;
   /** Veronica has said her filler, so a reading is on its way. */
   isSynthesizing: () => boolean;
@@ -55,7 +57,8 @@ function armWatchdog(latest: Latest, t0: number): () => void {
 
 /**
  * The call's clock. T0 is Veronica's first started_speaking, else join plus 15 s. From T0 it sends
- * the time check once (2:45 on the 5-minute arc, 4:15 on 7) and fires the watchdog (4:00 or 6:30).
+ * the time check once (3:15 on the speed round, 27:00 on an open call), fires the watchdog (4:15 or
+ * 28:30) and sends the wrap-up note (4:25 or 29:20), since Tavus ends the call at the cap without a warning.
  */
 export function useCallClock(input: CallClockInput): { markPalSpeaking: () => void } {
   const latest = useRef(input);
@@ -94,6 +97,15 @@ export function useCallClock(input: CallClockInput): { markPalSpeaking: () => vo
   useEffect(() => {
     if (t0 === null) return;
     return armWatchdog(latest, t0);
+  }, [t0, timing]);
+
+  // A goodbye before the cap, so the call never ends mid-sentence.
+  useEffect(() => {
+    if (t0 === null) return;
+    const wrapUp = setTimeout(() => {
+      if (latest.current.shouldWrapUp()) latest.current.sendContext(WRAP_UP_TEXT);
+    }, msUntil(t0, timing.wrapUpSec));
+    return () => clearTimeout(wrapUp);
   }, [t0, timing]);
 
   return { markPalSpeaking };

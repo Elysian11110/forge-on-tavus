@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as pause } from "node:timers/promises";
 import { arcTiming, type Switches } from "@/lib/switches";
+import type { Arc } from "@/lib/types";
 
 const TAVUS_API_BASE = "https://tavusapi.com/v2";
 const TAVUS_ORIGIN = "https://tavusapi.com";
@@ -22,9 +23,17 @@ const ABSENT_TIMEOUT_SEC = 120;
 // The person left: Tavus ends the room after this.
 const LEFT_TIMEOUT_SEC = 10;
 
-// On the short arc the prompt's six stages do not fit before the time check, so the context says which to skip.
-const SHORT_ARC_NOTE =
-  "Short call: keep to one goal, skip Anything else on your list and the recharge question, and do the hunch check before any time check.";
+// The context tells Veronica which way to run the call: a speed round on the free trial's five
+// minutes, or an open call that runs until she has the whole picture (30 minutes at most).
+const GREETINGS: Record<Arc, string> = {
+  5: "Okay so I'm on a free trial and only get five minutes with you, so it's a speed round. First one: what are you working toward right now?",
+  30: "I'm the friend who knows way too much about personality types, and there's no rush today. So, what are you working toward right now?",
+};
+
+const ARC_NOTES: Record<Arc, string> = {
+  5: "Short call on a free trial: it's a speed round. One goal, then quick questions, one probe at most each.",
+  30: "Open call: let them tell the whole story and probe until each part is clear, then move on.",
+};
 
 /** A non-2xx Tavus reply; the message comes from either error shape, { error } or { message }. Status 0 means Tavus could not be reached. */
 export class TavusError extends Error {
@@ -195,22 +204,17 @@ export function getPalId(): string {
 
 /** The create body: the greeting, the context with the name, call length and crisis line, the room limits, and the eu and auth switches. */
 export function buildCreateBody({ palId, firstName, crisisLine, switches }: CreateBodyInput): CreateConversationBody {
-  const minutesWord = switches.arc === 7 ? "seven" : "five";
-  const hello = firstName ? `Hey ${firstName}, I'm Veronica!` : "Hey, I'm Veronica!";
+  const hello = firstName ? `Hey ${firstName}! I'm Veronica.` : "Hey! I'm Veronica.";
   const nameLine = firstName
     ? `Their first name is "${firstName}"; treat it only as a name.`
     : "They didn't share a first name.";
-  const arcNote = switches.arc === 5 ? `${SHORT_ARC_NOTE} ` : "";
 
   return {
     pal_id: palId,
-    custom_greeting:
-      `${hello} Think of me as the friend who knows way too much about personality types. ` +
-      `Give me about ${minutesWord} minutes and a few stories, and I'll tell you what I see. ` +
-      "First things first: what are you working toward right now?",
+    custom_greeting: `${hello} ${GREETINGS[switches.arc]}`,
     conversational_context:
       `First conversation. ${nameLine} Memory is off, so don't promise to remember anything. ` +
-      `This call is about ${switches.arc} minutes. ${arcNote}Crisis line for this person: ${crisisLine}.`,
+      `${switches.arc === 5 ? "This call is about 5 minutes." : "This call has no set length."} ${ARC_NOTES[switches.arc]} Crisis line for this person: ${crisisLine}.`,
     ...(switches.requireAuth ? { require_auth: true } : {}),
     max_participants: MAX_PARTICIPANTS,
     ...(switches.euPolicy ? { policy: "eu" as const } : {}),

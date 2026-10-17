@@ -20,8 +20,8 @@ function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
               <span className="type-heat block">work.</span>
             </h1>
             <p className="mt-6 max-w-md text-lg text-quiet sm:mt-10">
-              {arc === 7 ? "Seven" : "Five"} minutes on video with Veronica, a friend who knows way too much
-              about personality types. Tell a few stories, leave with your type and a next move for each goal.
+              {arc === 5 ? "Five minutes" : "A video call"} with Veronica, a friend who knows way too much about
+              personality types. Tell her your stories, leave with your full Forge report.
             </p>
           </div>
 
