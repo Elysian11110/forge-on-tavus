@@ -6,11 +6,12 @@
 // it contradicts nothing. The result is the site's own shared-report link (the report lives in
 // the link, nothing is kept on the Forge site).
 
-import { apiError, isConversationId, isRecord, json, logFailure, openStore, readJsonBody, tokenError } from "@/lib/server/http";
-import type { StoredSession, SynthesisContext } from "@/lib/store";
+import { isRecord } from "@/lib/guards";
+import { apiError, authorizedSession, isConversationId, json, logFailure, readJsonBody } from "@/lib/server/http";
+import type { SynthesisContext } from "@/lib/store";
 import { MIN_TEXT_CHARS, callOnlyReport, enginePhase, pinReport, storyText } from "@/lib/report/compose";
 import { FORGE_SITE, decodeReport, encodedFromUrl, previewOf, readSiteReport, reportUrl, type SiteReport } from "@/lib/report/site";
-import { SESSION_HEADER, type Profile, type ReportResponse } from "@/lib/types";
+import type { Profile, ReportResponse } from "@/lib/types";
 
 // The unified scorer takes about a minute and a half, over three minutes on a long call.
 export const maxDuration = 300;
@@ -64,20 +65,9 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJsonBody(request);
   if (!isRecord(body) || !isConversationId(body.conversationId)) return apiError("bad_request", 400);
   const conversationId = body.conversationId;
-  const token = request.headers.get(SESSION_HEADER);
-  if (!token) return apiError("forbidden", 403);
-  const store = openStore();
-  if (store instanceof Response) return store;
-
-  let stored: StoredSession | null;
-  try {
-    stored = await store.getSession(conversationId);
-  } catch (error) {
-    logFailure("report: store read", error);
-    return apiError("store_unavailable", 503);
-  }
-  const denied = tokenError(token, stored?.sessionToken ?? null);
-  if (denied || !stored) return denied ?? apiError("not_found", 404);
+  const session = await authorizedSession(request, conversationId);
+  if (session instanceof Response) return session;
+  const { store } = session;
 
   let context: SynthesisContext;
   let cached: string | null;

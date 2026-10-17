@@ -72,7 +72,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-/** Re-reads the call until a stored turn carries the envelope's inference_id, for at most 3 s; the static filler covers the wait. After a crisis, or once a reading exists, no turn is needed. */
+/** Re-reads the call until a stored turn carries the envelope's inference_id, for at most 8 s; the static filler covers the wait. After a crisis, or once a reading exists, no turn is needed. */
 async function contextWithTurn(store: ForgeStore, conversationId: string, inferenceId: string | null): Promise<SynthesisContext> {
   const deadline = Date.now() + TURN_WAIT_MS;
   const settled = (context: SynthesisContext) =>

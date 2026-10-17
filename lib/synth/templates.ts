@@ -34,10 +34,19 @@ export function asSentence(text: string): string {
   return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
-/** The type is called: how_you_work is the checked model line or its gloss template. The Jungian code leads, spelled out so text-to-speech reads letters, since that is the name people know. */
+/** A line with its trailing punctuation gone, for text that sits mid-sentence. */
+export function withoutEndMark(text: string): string {
+  return text.trim().replace(/[.!?,;:]+$/, "");
+}
+
+/** "INTJ" becomes "I, N, T, J", so text-to-speech reads letters instead of a word. */
+export function spellCode(code: string): string {
+  return code.split("").join(", ");
+}
+
+/** The type is called: how_you_work is the checked model line or its gloss template. The Jungian code leads, spelled out, since that is the name people know. */
 export function calledReveal(howYouWork: string, callsign: string, jungian: string): string {
-  const letters = jungian.split("").join(", ");
-  return `Okay, here's what I'm seeing. ${asSentence(howYouWork)} That reads as ${letters}, what Forge calls the ${callsign} lens. What fits, and what doesn't?`;
+  return `Okay, here's what I'm seeing. ${asSentence(howYouWork)} That reads as ${spellCode(jungian)}, what Forge calls the ${callsign} lens. What fits, and what doesn't?`;
 }
 
 /** F01: no type yet; ends on the bank question for the likeliest lens. */

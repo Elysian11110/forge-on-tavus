@@ -51,17 +51,13 @@ export const MOVE_KINDS = ["lean_on", "guard", "refuel", "bring_in"] as const;
 export type MoveKind = (typeof MOVE_KINDS)[number];
 
 // Refusals: F05 no type at all, F01 no TRC row (so no Jungian or Socionics either), F04 no Enneagram.
-export const TRIGGER_IDS = ["F01", "F04", "F05"] as const;
-export type TriggerId = (typeof TRIGGER_IDS)[number];
+export type TriggerId = "F01" | "F04" | "F05";
 
 export type ProfileStatus = "complete" | "partial" | "insufficient" | "withheld_for_safety";
 
 // Call length in minutes, from FORGE_ARC: 5 for the free trial's speed round, else 30, the open
 // call's backstop.
 export type Arc = 5 | 30;
-
-// Who spoke; "replica" is the legacy duplicate of "pal" and is ignored everywhere.
-export type Role = "user" | "pal" | "replica";
 
 // What the store keeps for one call.
 
@@ -89,7 +85,7 @@ export interface EnneagramLabels {
 
 // The person's own words from one turn, and the pattern they point to.
 export interface EvidenceQuote {
-  pattern_id: string;
+  pattern_id: PatternId;
   words: string;
 }
 
@@ -99,7 +95,7 @@ export interface ProfileMove {
 }
 
 export interface ProfileGoal {
-  goal_id: string;
+  goal_id: GoalId;
   goal: string;
   by_when: string;
   edge: string;
@@ -125,7 +121,7 @@ export interface Profile {
   socionics_confidence: Confidence;
   enneagram: number | null;
   enneagram_labels: EnneagramLabels | null;
-  enneagram_instinct: string;
+  enneagram_instinct: Instinct;
   enneagram_confidence: Confidence;
   in_your_words: EvidenceQuote[];
   how_you_work: string;
@@ -223,8 +219,8 @@ export const SIGNATURE_HEADER = "x-tavus-signature";
 
 export type StoreKind = "upstash" | "memory";
 
-// 400 bad_request or consent_required, 403 forbidden, 404 not_found, 409 call_live, 502 tavus or
-// report_failed, 503 store_unavailable or not_configured.
+// 400 bad_request or consent_required, 403 forbidden or withheld, 404 not_found, 409 call_live,
+// 422 report_failed, 502 tavus, 503 store_unavailable or not_configured.
 export type ApiErrorCode =
   | "bad_request"
   | "consent_required"

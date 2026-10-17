@@ -6,14 +6,13 @@
 import type { Confidence, Instinct } from "@/lib/types";
 import { corpus, fnGloss } from "@/lib/synth/corpus";
 import type { EnneagramEntry, TrcRow } from "@/lib/synth/corpus";
-import { asSentence, confidenceWord } from "@/lib/synth/templates";
+import { NUMBER_WORDS } from "@/lib/synth/normalize";
+import { asSentence, confidenceWord, spellCode, withoutEndMark } from "@/lib/synth/templates";
 
 export const RUNDOWN_MAX_BYTES = 1500;
 
 const HEADER =
   "Checked rundown from Forge's server. The reveal is already spoken. In one short turn, in your own words, give the type in a sentence and the one move you'd try first, adding no type facts. Name the type by its Jungian letters, said one by one as spelled here, and the lens name; never say the three-letter TRC code. Then say the full report is on their screen, say a quick warm bye, then use the end_call tool without saying its name.";
-
-const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
 /** Under F05 there is no reading to walk; Veronica only points to the goals, if any, and closes. */
 export function f05Rundown(goalsOnScreen: boolean): string {
@@ -42,11 +41,6 @@ export interface RundownInput {
   /** F01 only: what the stories did show. */
   whatISaw: string | null;
   goals: RundownGoal[];
-}
-
-/** "INTJ" becomes "I, N, T, J". */
-export function spellCode(code: string): string {
-  return code.split("").join(", ");
 }
 
 function byteLength(text: string): number {
@@ -88,7 +82,7 @@ function typeLines(input: RundownInput): string {
 }
 
 function goalLine(goal: RundownGoal, index: number): string {
-  const label = goal.label?.trim().replace(/[.!?,;:]+$/, "");
+  const label = goal.label ? withoutEndMark(goal.label) : "";
   const parts = [`Goal ${index + 1}${label ? `, ${label}` : ""}.`];
   if (goal.edge) parts.push(`Edge: ${asSentence(goal.edge)}`);
   if (goal.watch) parts.push(`Watch for: ${asSentence(goal.watch)}`);

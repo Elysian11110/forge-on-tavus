@@ -1,11 +1,11 @@
-// Shared by the API routes: JSON replies, the body read, the id and token checks, the store
-// opener and the one log line per failure. Server only.
+// Shared by the API routes: JSON replies, the body read, the id check, the session lookup behind
+// the token check, the store opener and the one log line per failure. Server only.
 
 import { ZodError } from "zod";
 import { safeEqual } from "@/lib/server/auth";
-import { getStore, StoreUnavailableError, type ForgeStore } from "@/lib/store";
+import { getStore, StoreUnavailableError, type ForgeStore, type StoredSession } from "@/lib/store";
 import { TavusError } from "@/lib/tavus";
-import type { ApiError, ApiErrorCode } from "@/lib/types";
+import { SESSION_HEADER, type ApiError, type ApiErrorCode } from "@/lib/types";
 
 const NO_CACHE = { "Cache-Control": "no-store" };
 
@@ -31,11 +31,6 @@ export async function readJsonBody(request: Request): Promise<unknown> {
   }
 }
 
-/** A plain object, as opposed to an array, null or a primitive. */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 /** Tavus conversation ids are short and alphanumeric; anything else never reaches a Tavus URL or a store key. */
 export function isConversationId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(value);
@@ -52,11 +47,42 @@ export function openStore(): ForgeStore | Response {
   }
 }
 
-/** 403 without a token or on a mismatch, 404 for a conversation the store does not know, null when the token matches. */
-export function tokenError(provided: string | null | undefined, stored: string | null): Response | null {
-  if (!provided) return apiError("forbidden", 403);
+/** 403 on a mismatch, 404 for a conversation the store does not know, null when the token matches. */
+function tokenError(provided: string, stored: string | null): Response | null {
   if (stored === null) return apiError("not_found", 404);
   return safeEqual(provided, stored) ? null : apiError("forbidden", 403);
+}
+
+/** The store and the stored session once the token matches, else the reply to send. */
+export interface AuthorizedSession {
+  store: ForgeStore;
+  stored: StoredSession;
+}
+
+/**
+ * The session behind a conversation, checked against the token: 403 without a token or on a
+ * mismatch, 404 for a call the store does not know, 503 when the store is down or unreachable.
+ * The token is the session header unless the route read it from somewhere else.
+ */
+export async function authorizedSession(
+  request: Request,
+  conversationId: string,
+  token: string | null = request.headers.get(SESSION_HEADER),
+): Promise<AuthorizedSession | Response> {
+  if (!token) return apiError("forbidden", 403);
+  const store = openStore();
+  if (store instanceof Response) return store;
+
+  let stored: StoredSession | null;
+  try {
+    stored = await store.getSession(conversationId);
+  } catch (error) {
+    logFailure(`${new URL(request.url).pathname}: store read`, error);
+    return apiError("store_unavailable", 503);
+  }
+  const denied = tokenError(token, stored?.sessionToken ?? null);
+  if (denied || !stored) return denied ?? apiError("not_found", 404);
+  return { store, stored };
 }
 
 /** One log line per failure, with nothing from the request in it. */

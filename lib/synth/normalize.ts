@@ -1,4 +1,5 @@
-const NUMBER_WORDS = [
+/** Numerals 0 to 20 as words, indexed by value; the rundown reads the Enneagram type off it too. */
+export const NUMBER_WORDS = [
   "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
   "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
 ];

@@ -3,6 +3,8 @@
 // strings plus a systems object, anything else is "Report not found"), and the link. The report
 // lives in the link; the site keeps no copy.
 
+import { isRecord } from "@/lib/guards";
+
 export const FORGE_SITE = "https://forge-jet.vercel.app";
 
 /** The seven systems the site's page draws, in its display order. */
@@ -38,10 +40,6 @@ export interface SiteReport {
   systems: Record<SiteSystemKey, SiteSystem>;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 function optionalString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value : undefined;
 }
@@ -63,7 +61,7 @@ function evidenceList(value: unknown): SiteEvidence[] | undefined {
 }
 
 /** Drops undefined fields so the encoded link carries only what the page draws. */
-function compact<T extends object>(value: T): T {
+export function compact<T extends object>(value: T): T {
   return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as T;
 }
 

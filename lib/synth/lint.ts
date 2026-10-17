@@ -3,20 +3,21 @@
 // is blank or runs over its cap is replaced or dropped by the caller.
 
 import { TRC_CODES } from "@/lib/types";
+import { JUNGIAN_CODE, SOCIONICS_CODE } from "@/lib/synth/codes";
 import { corpus } from "@/lib/synth/corpus";
 import { normalizeText } from "@/lib/synth/normalize";
 
 export type LintReason = "empty" | "over_cap" | "code" | "dash" | "quote" | "banned";
 
-// Codes and framework names. TRC and Socionics codes match in capitals only, because "ant", "see"
-// and "lie" are ordinary words; Jungian codes match in any case.
+// Codes and framework names. TRC codes match in capitals only, because "ant" is an ordinary word;
+// the Jungian and Socionics patterns come from lib/synth/codes.
 
 const CALLSIGNS = corpus.trc_rows.map((row) => row.callsign).join("|");
 
 const CODE_PATTERNS: readonly RegExp[] = [
   new RegExp(`\\b(?:${TRC_CODES.join("|")})\\b`),
-  /\b[IE][NS][TF][JP]\b/i,
-  /\b(?:SLI|SEI|SLE|SEE|ILI|IEI|ILE|IEE|LSI|LII|LSE|LIE|ESI|EII|ESE|EIE)\b/,
+  JUNGIAN_CODE,
+  SOCIONICS_CODE,
   /\b(?:Si|Se|Ni|Ne|Ti|Te|Fi|Fe|SI|SE|NI|NE|TI|TE|FI|FE)\b/,
   /\b(?:introvert(?:ed)?|extravert(?:ed)?|extrovert(?:ed)?)\s+(?:sensing|sensor|intuition|intuitive|thinking|thinker|feeling|feeler)\b/i,
   /\b(?:TRC|MBTI|Myers[\s-]?Briggs|Jung|Jungian|Socionics?|Enneagram|sociotypes?|quadras?|cognitive functions?)\b/i,

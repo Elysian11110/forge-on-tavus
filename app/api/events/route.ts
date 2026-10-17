@@ -2,9 +2,10 @@
 // guardrail. Checked against the session token; a repeat is stored once.
 
 import { z } from "zod";
-import { apiError, isConversationId, isRecord, json, logFailure, openStore, readJsonBody, tokenError } from "@/lib/server/http";
+import { isRecord } from "@/lib/guards";
+import { apiError, authorizedSession, isConversationId, json, logFailure, readJsonBody } from "@/lib/server/http";
 import type { ForgeStore } from "@/lib/store";
-import { GOAL_IDS, SESSION_HEADER, type EventsResponse } from "@/lib/types";
+import { GOAL_IDS, type EventsResponse } from "@/lib/types";
 
 // Generous caps: a goal a few characters over the tool's limit still counts, abuse does not.
 const CAP = { id: 256, goal: 500, by_when: 200, user_quote: 1000, speech: 5000, reason: 1000 };
@@ -38,17 +39,13 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJsonBody(request);
   if (!isRecord(body) || !isConversationId(body.conversationId)) return apiError("bad_request", 400);
   const conversationId = body.conversationId;
-  const token = request.headers.get(SESSION_HEADER);
-  if (!token) return apiError("forbidden", 403);
-  const store = openStore();
-  if (store instanceof Response) return store;
+  const session = await authorizedSession(request, conversationId);
+  if (session instanceof Response) return session;
 
+  const relay = relaySchema.safeParse(body);
+  if (!relay.success) return apiError("bad_request", 400);
   try {
-    const denied = tokenError(token, await store.getSessionToken(conversationId));
-    if (denied) return denied;
-    const relay = relaySchema.safeParse(body);
-    if (!relay.success) return apiError("bad_request", 400);
-    await keep(store, conversationId, relay.data);
+    await keep(session.store, conversationId, relay.data);
   } catch (error) {
     logFailure("events", error);
     return apiError("store_unavailable", 503);

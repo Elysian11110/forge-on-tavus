@@ -4,13 +4,15 @@
 // its narrative is kept only where it names nothing that contradicts that type. The person's goals
 // and their own quoted words go wherever the site's report shape has a place for them. No I/O here.
 
+import { isRecord } from "@/lib/guards";
 import type { SynthesisContext } from "@/lib/store";
 import type { EvidenceQuote, Fn, Goal, Instinct, PatternId, Profile, ProfileGoal } from "@/lib/types";
+import { JUNGIAN_CODE, SOCIONICS_CODE } from "@/lib/synth/codes";
 import { PATTERN_FUNCTION, corpus, fnGloss, trcRow } from "@/lib/synth/corpus";
 import type { EnneagramEntry, TrcRow } from "@/lib/synth/corpus";
-import { asSentence, howYouWorkFromRow, watchTemplate } from "@/lib/synth/templates";
+import { asSentence, howYouWorkFromRow, watchTemplate, withoutEndMark } from "@/lib/synth/templates";
 import { wordCount } from "@/lib/synth/normalize";
-import type { SiteEvidence, SiteReport, SiteSystem } from "@/lib/report/site";
+import { compact, type SiteEvidence, type SiteReport, type SiteSystem } from "@/lib/report/site";
 
 /** The extractor's own input cap. */
 export const MAX_TEXT_CHARS = 10_000;
@@ -56,25 +58,13 @@ export function storyText({ goals, turns }: SynthesisContext): string {
   return [...goalLines, ...turns.map((turn) => turn.speech)].join("\n").slice(0, MAX_TEXT_CHARS);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isInstinct(value: string): value is Instinct {
-  return value === "self_preservative" || value === "social" || value === "sexual" || value === "undetermined";
-}
-
 /** The type as the screen showed it; nothing is called for a missing profile. */
 export function calledType(profile: Profile | null): CalledType {
   if (!profile) return { row: null, enneagram: null };
   const row = profile.trc ? trcRow(profile.trc) : null;
   const enneagram =
     profile.enneagram !== null && profile.enneagram_labels
-      ? {
-          type: profile.enneagram,
-          labels: profile.enneagram_labels,
-          instinct: isInstinct(profile.enneagram_instinct) ? profile.enneagram_instinct : "undetermined",
-        }
+      ? { type: profile.enneagram, labels: profile.enneagram_labels, instinct: profile.enneagram_instinct }
       : null;
   return { row, enneagram };
 }
@@ -123,18 +113,18 @@ export function enginePhase(extracted: unknown, context: SynthesisContext): Reco
 }
 
 // Where the engine's text contradicts the screen. Codes match as the site's own normalizer reads
-// them: Jungian in any case, Socionics and quadras in capitals only ("lie" and "see" are words).
+// them: the Jungian and Socionics patterns from lib/synth/codes, quadras in capitals only.
 
-const JUNGIAN_CODE = /\b[IE][NS][TF][JP]\b/gi;
-const SOCIONICS_CODE = /\b(?:SLI|SEI|SLE|SEE|ILI|IEI|ILE|IEE|LSI|LII|LSE|LIE|ESI|EII|ESE|EIE)\b/g;
 const QUADRA = /\b(?:Alpha|Beta|Gamma|Delta)\b/g;
 const FUNCTION = /\b(?:Si|Se|Ni|Ne|Ti|Te|Fi|Fe)\b/g;
 const WING = /\b([1-9])w[1-9]\b/gi;
 const TYPE_DIGIT = /\b(?:type|core|enneagram)\s+([1-9])\b/gi;
 const CENTER_DIGIT = /\b([1-9])\s*\((gut|heart|head)\)/gi;
 
+/** Every match in the text; a pattern without the global flag gets it here, so matchAll accepts it. */
 function matches(text: string, pattern: RegExp): string[] {
-  return Array.from(text.matchAll(pattern), (match) => match[0]);
+  const all = pattern.global ? pattern : new RegExp(pattern.source, `${pattern.flags}g`);
+  return Array.from(text.matchAll(all), (match) => match[0]);
 }
 
 function captures(text: string, pattern: RegExp): RegExpMatchArray[] {
@@ -169,10 +159,6 @@ export function contradicts(text: string, called: CalledType, agreement: Agreeme
   return false;
 }
 
-function compact<T extends object>(value: T): T {
-  return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as T;
-}
-
 function capitalise(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
@@ -194,19 +180,8 @@ function functionSignal(pattern: PatternId, row: TrcRow, system: "jungian" | "so
   return null;
 }
 
-/** The person's own words as the card's "From your life" rows, each pointed at its place in the stack. */
-function wordsAsEvidence(quotes: EvidenceQuote[], row: TrcRow, system: "jungian" | "socionics"): SiteEvidence[] | undefined {
-  const rows: SiteEvidence[] = [];
-  for (const quote of quotes) {
-    const signal = functionSignal(quote.pattern_id as PatternId, row, system);
-    if (signal) rows.push({ moment: `You said: ${quote.words}`, signal });
-  }
-  return rows.length > 0 ? rows : undefined;
-}
-
-function enneagramSignal(pattern: string, called: CalledEnneagram): string | null {
-  const entry = corpus.patterns[pattern as PatternId];
-  if (!entry) return null;
+function enneagramSignal(pattern: PatternId, called: CalledEnneagram): string | null {
+  const entry = corpus.patterns[pattern];
   if (pattern === "P13") {
     const word = instinctWord(called.instinct);
     return word ? `${word}: ${entry.label}` : entry.label;
@@ -215,10 +190,11 @@ function enneagramSignal(pattern: string, called: CalledEnneagram): string | nul
   return null;
 }
 
-function wordsAsEnneagramEvidence(quotes: EvidenceQuote[], called: CalledEnneagram): SiteEvidence[] | undefined {
+/** The person's own words as a card's "From your life" rows; a quote whose pattern says nothing on this card is left out. */
+function evidenceRows(quotes: EvidenceQuote[], signalOf: (pattern: PatternId) => string | null): SiteEvidence[] | undefined {
   const rows: SiteEvidence[] = [];
   for (const quote of quotes) {
-    const signal = enneagramSignal(quote.pattern_id, called);
+    const signal = signalOf(quote.pattern_id);
     if (signal) rows.push({ moment: `You said: ${quote.words}`, signal });
   }
   return rows.length > 0 ? rows : undefined;
@@ -228,14 +204,20 @@ function firstWatch(goals: ProfileGoal[]): string | undefined {
   return goals.find((goal) => goal.watch_for.trim())?.watch_for;
 }
 
+/** The checked how_you_work line as a sentence, else the row's template; empty with neither. */
+function howYouWorkOf(profile: Profile, row: TrcRow | null): string {
+  if (profile.how_you_work.trim()) return asSentence(profile.how_you_work);
+  return row ? howYouWorkFromRow(row) : "";
+}
+
 function jungianCard(row: TrcRow, profile: Profile, engine: SiteSystem, agrees: boolean): SiteSystem {
   const own = agrees ? engine : null;
   const stack = ROLES.map((role) => row[role]).join(" > ");
   return compact({
     code: row.jungian,
     detail: stack,
-    verdict: own?.verdict ?? (profile.how_you_work.trim() ? asSentence(profile.how_you_work) : howYouWorkFromRow(row)),
-    evidence: own?.evidence ?? wordsAsEvidence(profile.in_your_words, row, "jungian"),
+    verdict: own?.verdict ?? howYouWorkOf(profile, row),
+    evidence: own?.evidence ?? evidenceRows(profile.in_your_words, (pattern) => functionSignal(pattern, row, "jungian")),
     watchFor: own?.watchFor ?? firstWatch(profile.goals) ?? watchTemplate("drain", row, null),
     bullets: own?.bullets,
     justification:
@@ -250,7 +232,7 @@ function socionicsCard(row: TrcRow, profile: Profile, engine: SiteSystem, agrees
     code: row.socionics,
     detail: `${row.quadra} quadra / Base ${row.lens}`,
     verdict: own?.verdict ?? howYouWorkFromRow(row),
-    evidence: own?.evidence ?? wordsAsEvidence(profile.in_your_words, row, "socionics"),
+    evidence: own?.evidence ?? evidenceRows(profile.in_your_words, (pattern) => functionSignal(pattern, row, "socionics")),
     watchFor: own?.watchFor ?? watchTemplate("drain", row, null),
     bullets: own?.bullets,
     justification:
@@ -292,15 +274,11 @@ function enneagramCard(called: CalledEnneagram, profile: Profile, engine: SiteSy
     tritype: pinnedTritype(engine.tritype, called),
     instinctStack: pinnedInstincts(engine.instinctStack, called),
     verdict: own?.verdict ?? `The thought loop is ${labels.fixation}, the drive behind it is ${labels.passion}, and the trap is ${labels.trap}.`,
-    evidence: own?.evidence ?? wordsAsEnneagramEvidence(profile.in_your_words, called),
+    evidence: own?.evidence ?? evidenceRows(profile.in_your_words, (pattern) => enneagramSignal(pattern, called)),
     watchFor: own?.watchFor ?? watchTemplate("enneagram_trap", null, labels),
     bullets: own?.bullets,
     justification: own?.justification || `Called live on your call as a ${labels.triad} type, from a thought pattern that kept coming back in your own words.`,
   });
-}
-
-function trimEnd(text: string): string {
-  return text.trim().replace(/[.!?,;:]+$/, "");
 }
 
 /** One bullet per goal: the goal as saved, its edge and the first move when the screen had them, else their own words. */
@@ -308,17 +286,17 @@ function goalBullets(profile: Profile | null, stored: Goal[]): string[] {
   const byId = new Map<string, Goal>(stored.map((goal) => [goal.goal_id, goal]));
   if (profile && profile.goals.length > 0) {
     return profile.goals.map((card) => {
-      const when = card.by_when && card.by_when !== "not said" ? `, ${trimEnd(card.by_when)}` : "";
+      const when = card.by_when && card.by_when !== "not said" ? `, ${withoutEndMark(card.by_when)}` : "";
       const move = card.moves[0] ? ` ${card.moves[0].label}: ${asSentence(card.moves[0].move)}` : "";
       const edge = card.edge.trim() ? ` ${asSentence(card.edge)}` : "";
       const quote = !edge && !move ? ` In your words: ${asSentence(byId.get(card.goal_id)?.user_quote ?? "")}` : "";
-      return `Working toward: ${trimEnd(card.goal)}${when}.${edge}${move}${quote}`.trim();
+      return `Working toward: ${withoutEndMark(card.goal)}${when}.${edge}${move}${quote}`.trim();
     });
   }
   return stored.map((goal) => {
-    const when = goal.by_when && goal.by_when !== "not said" ? `, ${trimEnd(goal.by_when)}` : "";
+    const when = goal.by_when && goal.by_when !== "not said" ? `, ${withoutEndMark(goal.by_when)}` : "";
     const quote = goal.user_quote.trim() ? ` In your words: ${asSentence(goal.user_quote)}` : "";
-    return `Working toward: ${trimEnd(goal.goal)}${when}.${quote}`;
+    return `Working toward: ${withoutEndMark(goal.goal)}${when}.${quote}`;
   });
 }
 
@@ -334,11 +312,11 @@ function fallbackHeadline(profile: Profile, row: TrcRow): string {
 }
 
 function jungianOf(system: SiteSystem): string | null {
-  return system.code.toUpperCase().match(/[IE][NS][TF][JP]/)?.[0] ?? null;
+  return system.code.toUpperCase().match(JUNGIAN_CODE)?.[0] ?? null;
 }
 
 function socionicsOf(system: SiteSystem): string | null {
-  return system.code.toUpperCase().match(/\b(?:SLI|SEI|SLE|SEE|ILI|IEI|ILE|IEE|LSI|LII|LSE|LIE|ESI|EII|ESE|EIE)\b/)?.[0] ?? null;
+  return system.code.toUpperCase().match(SOCIONICS_CODE)?.[0] ?? null;
 }
 
 function enneagramOf(system: SiteSystem): string | null {
@@ -370,13 +348,7 @@ export function pinReport(engine: SiteReport, profile: Profile | null, goals: Go
   if (profile && enneagram) systems.enneagram = enneagramCard(enneagram, profile, engine.systems.enneagram, agreement.enneagram);
 
   const headline = keep(engine.headline) ? engine.headline : profile && row ? fallbackHeadline(profile, row) : engine.headline;
-  const summary = keep(engine.summary)
-    ? engine.summary
-    : profile && row
-      ? profile.how_you_work.trim()
-        ? asSentence(profile.how_you_work)
-        : howYouWorkFromRow(row)
-      : engine.summary;
+  const summary = keep(engine.summary) ? engine.summary : profile && row ? howYouWorkOf(profile, row) : engine.summary;
   const bullets = [...goalBullets(profile, goals), ...(engine.summaryBullets ?? []).filter(keep)].slice(0, MAX_BULLETS);
 
   return compact({
@@ -401,7 +373,7 @@ export function callOnlyReport(profile: Profile, goals: Goal[]): SiteReport {
   const row = profile.trc ? trcRow(profile.trc) : null;
   const engine: SiteReport = {
     headline: row ? fallbackHeadline(profile, row) : "Your Forge report",
-    summary: profile.how_you_work.trim() ? asSentence(profile.how_you_work) : row ? howYouWorkFromRow(row) : NOT_READ_YET,
+    summary: howYouWorkOf(profile, row) || NOT_READ_YET,
     method: "phases",
     systems: {
       mbti: blank,

@@ -4,17 +4,9 @@
 import { setTimeout as pause } from "node:timers/promises";
 import { cleanFirstName, crisisLineFor } from "@/lib/safety";
 import { newSessionToken } from "@/lib/server/auth";
-import {
-  apiError,
-  isConversationId,
-  isRecord,
-  json,
-  logFailure,
-  openStore,
-  readJsonBody,
-  tokenError,
-} from "@/lib/server/http";
-import type { ForgeStore, StoredSession } from "@/lib/store";
+import { isRecord } from "@/lib/guards";
+import { apiError, authorizedSession, isConversationId, json, logFailure, openStore, readJsonBody } from "@/lib/server/http";
+import type { ForgeStore } from "@/lib/store";
 import { arcTiming, readSwitches, type Switches } from "@/lib/switches";
 import {
   buildCreateBody,
@@ -26,7 +18,7 @@ import {
   TavusError,
   type CreatedConversation,
 } from "@/lib/tavus";
-import { SESSION_HEADER, type CreateSessionResponse, type GetSessionResponse } from "@/lib/types";
+import type { CreateSessionResponse, GetSessionResponse } from "@/lib/types";
 
 // How long a create that timed out gets to land on Tavus's side before the orphan check lists it.
 const ORPHAN_SETTLE_MS = 3000;
@@ -81,21 +73,9 @@ export async function POST(request: Request): Promise<Response> {
 export async function GET(request: Request): Promise<Response> {
   const conversationId = new URL(request.url).searchParams.get("c");
   if (!isConversationId(conversationId)) return apiError("bad_request", 400);
-  const token = request.headers.get(SESSION_HEADER);
-  if (!token) return apiError("forbidden", 403);
-  const store = openStore();
-  if (store instanceof Response) return store;
-
-  let stored: StoredSession | null;
-  try {
-    stored = await store.getSession(conversationId);
-  } catch (error) {
-    logFailure("session: poll", error);
-    return apiError("store_unavailable", 503);
-  }
-  const denied = tokenError(token, stored?.sessionToken ?? null);
-  if (denied || !stored) return denied ?? apiError("not_found", 404);
-  return json<GetSessionResponse>(stored.view);
+  const session = await authorizedSession(request, conversationId);
+  if (session instanceof Response) return session;
+  return json<GetSessionResponse>(session.stored.view);
 }
 
 /** Hands the created call to the browser once the store has its session; a call the browser could not use is ended first, so it stops billing. */
