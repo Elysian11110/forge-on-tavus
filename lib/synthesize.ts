@@ -286,10 +286,10 @@ function composeReveal(args: SynthesizeArgs, matched: readonly MatchedEvidence[]
     const settleQuestion = settleQuestionFor(likeliestLens(matched, called.modelRow?.lens ?? null));
     return { howYouWork, spoken: f01Reveal(settleQuestion), settleQuestion };
   }
-  let spoken = calledReveal(howYouWork, row.callsign);
+  let spoken = calledReveal(howYouWork, row.callsign, row.jungian);
   if (wordCount(spoken) > REVEAL_MAX_WORDS && howYouWork !== template) {
     howYouWork = template;
-    spoken = calledReveal(template, row.callsign);
+    spoken = calledReveal(template, row.callsign, row.jungian);
     replaced.push(`how_you_work (over ${REVEAL_MAX_WORDS} words)`);
   }
   return { howYouWork, spoken, settleQuestion: null };

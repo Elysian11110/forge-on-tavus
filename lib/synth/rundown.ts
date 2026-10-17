@@ -11,7 +11,7 @@ import { asSentence, confidenceWord } from "@/lib/synth/templates";
 export const RUNDOWN_MAX_BYTES = 1500;
 
 const HEADER =
-  "Checked rundown from Forge's server. The reveal is already spoken. In one short turn, in your own words, give the type in a sentence and the one move you'd try first, adding no type facts. Name the type by its Jungian letters, said one by one as spelled here, and the lens name; never say the three-letter TRC code. Then say the full report is on their screen, say a quick warm bye and call end_call.";
+  "Checked rundown from Forge's server. The reveal is already spoken. In one short turn, in your own words, give the type in a sentence and the one move you'd try first, adding no type facts. Name the type by its Jungian letters, said one by one as spelled here, and the lens name; never say the three-letter TRC code. Then say the full report is on their screen, say a quick warm bye, then use the end_call tool without saying its name.";
 
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
@@ -19,7 +19,7 @@ const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "sev
 export function f05Rundown(goalsOnScreen: boolean): string {
   return (
     "Checked rundown from Forge's server: no reading this time, since there weren't enough of their stories to go on. Name no type. " +
-    (goalsOnScreen ? "Say their goals are on their screen, say a quick warm bye and call end_call." : "Say a quick warm bye and call end_call.")
+    (goalsOnScreen ? "Say their goals are on their screen, say a quick warm bye, then use the end_call tool without saying its name." : "Say a quick warm bye, then use the end_call tool without saying its name.")
   );
 }
 

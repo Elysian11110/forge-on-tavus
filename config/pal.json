@@ -40,8 +40,7 @@
       "visual_awareness_queries": [
         "Does the user look away from the camera for a few seconds before answering?",
         "Does the user smile or become more animated in their face or hands when a particular topic comes up?",
-        "Does the user look sad, uncomfortable or tense when a particular topic comes up?",
-        "Does the user react to things happening around them, such as sounds, people or objects in the room?"
+        "Does the user look sad, uncomfortable or tense when a particular topic comes up?"
       ],
       "perception_analysis_queries": [
         "In which part of the call (beginning, middle, or end) did the participant look most animated, and in which part least?",

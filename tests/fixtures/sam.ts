@@ -86,7 +86,7 @@ export const samArguments: SynthesizeArgs = {
 
 /** The words Tavus speaks for Sam: the called template around the checked how_you_work. */
 export const SAM_EXPECTED_REVEAL =
-  "Okay, here's what I'm seeing. You see where something is heading long before it gets there, like picturing the shop open by spring. Then you make it real by going with what works, like checking your sales every Friday. That's the Planning lens. What fits, and what doesn't?";
+  "Okay, here's what I'm seeing. You see where something is heading long before it gets there, like picturing the shop open by spring. Then you make it real by going with what works, like checking your sales every Friday. That reads as I, N, T, J, what Forge calls the Planning lens. What fits, and what doesn't?";
 
 /** The synthesize input the route builds for Sam from the store. */
 export function samInput(overrides: Partial<SynthInput> = {}): SynthInput {

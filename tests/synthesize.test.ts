@@ -477,7 +477,7 @@ describe("read-across from the TRC row", () => {
     expect(profile).toMatchObject({ status: "partial", triggers: ["F04"], trc: code, callsign, lens, tool, spark, drain, jungian, socionics, quadra });
 
     expect(profile.how_you_work).toBe(howYouWorkFromRow(trcRow(code)));
-    expect(profile.spoken_reveal).toBe(calledReveal(profile.how_you_work, callsign));
+    expect(profile.spoken_reveal).toBe(calledReveal(profile.how_you_work, callsign, jungian));
     expect(wordCount(profile.spoken_reveal)).toBeLessThanOrEqual(REVEAL_MAX_WORDS);
 
     const [card] = profile.goals;
@@ -679,8 +679,8 @@ describe("the reveal and the rundown", () => {
     expect(spokenF05(false)).toBe(
       "Okay, honest answer: I don't have enough of your stories yet, and I'm not going to guess. Give me two more sometime and I'll call it.",
     );
-    expect(calledReveal("You plan ahead.", "Planning")).toBe(
-      "Okay, here's what I'm seeing. You plan ahead. That's the Planning lens. What fits, and what doesn't?",
+    expect(calledReveal("You plan ahead.", "Planning", "ISTJ")).toBe(
+      "Okay, here's what I'm seeing. You plan ahead. That reads as I, S, T, J, what Forge calls the Planning lens. What fits, and what doesn't?",
     );
     expect(f01Reveal("Which one?")).toBe(
       "Okay, honest version: your stories didn't point one way often enough, so I won't guess a type yet. Here's the one question that would settle it: Which one?",
@@ -689,11 +689,11 @@ describe("the reveal and the rundown", () => {
 
   it("keeps the reveal within 60 words: a model line that would push it over is replaced", () => {
     const words = (count: number) => `${Array.from({ length: count }, () => "go").join(" ")}.`;
-    const fits = run(argsWith({ how_you_work: words(46) }));
+    const fits = run(argsWith({ how_you_work: words(37) }));
     expect(wordCount(fits.profile.spoken_reveal)).toBe(60);
     expect(fits.debug.replaced).toEqual([]);
 
-    const over = run(argsWith({ how_you_work: words(47) }));
+    const over = run(argsWith({ how_you_work: words(38) }));
     expect(over.profile.how_you_work).toBe(howYouWorkFromRow(RNT));
     expect(wordCount(over.profile.spoken_reveal)).toBeLessThanOrEqual(REVEAL_MAX_WORDS);
     expect(over.debug.replaced).toEqual(["how_you_work (over 60 words)"]);
