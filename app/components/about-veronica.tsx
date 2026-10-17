@@ -60,9 +60,15 @@ export function AboutVeronica() {
         <div className="p-6 sm:p-10">
           <p className="stamp">Why I built Veronica</p>
           <h2 id="about-veronica-title" className="mt-5 text-3xl font-medium leading-[1.1] tracking-[-0.03em] sm:text-4xl">
-            A typologist you can actually afford.
+            Hi Tavus team!
           </h2>
           <div className="mt-6 space-y-4 text-ink-body">
+            <p>
+              As you probably know, people all over the internet try to understand themselves through personality types:
+              MBTI, the Enneagram, Socionics and a few more. I built Forge, one unified system that gives you a complete
+              rundown of your personality across seven of them, so you can see your strengths, your weaknesses, and what to
+              do with that to become a better version of yourself.
+            </p>
             <p>
               Typology is huge online. Whole subreddits, Discords and TikTok comment sections are full of people trying to
               work out if they&apos;re an INTJ or an INFJ, a 5 or a 6. Most start with a free quiz, get a label, and then
@@ -82,6 +88,9 @@ export function AboutVeronica() {
               something heavy comes up. And she can&apos;t make things up about you: Forge&apos;s server checks every quote
               she uses against what you actually said, and if your stories don&apos;t point one way yet, she says so. When
               you hang up, your full Forge report is waiting.
+            </p>
+            <p>
+              Feel free to talk to her about whatever is on your mind. Just don&apos;t give her any private information.
             </p>
           </div>
           <form method="dialog" className="mt-8">
