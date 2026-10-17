@@ -664,7 +664,7 @@ describe("the reveal and the rundown", () => {
       "Okay, honest answer: I don't have enough of your stories yet, and I'm not going to guess. Give me two more sometime and I'll call it.",
     );
     expect(calledReveal("You plan ahead.", "Planning")).toBe(
-      "Okay, here's what I'm seeing. You plan ahead. In TRC, that's the Planning lens. What fits, and what doesn't?",
+      "Okay, here's what I'm seeing. You plan ahead. That's the Planning lens. What fits, and what doesn't?",
     );
     expect(f01Reveal("Which one?")).toBe(
       "Okay, honest version: your stories didn't point one way often enough, so I won't guess a type yet. Here's the one question that would settle it: Which one?",
@@ -673,11 +673,11 @@ describe("the reveal and the rundown", () => {
 
   it("keeps the reveal within 60 words: a model line that would push it over is replaced", () => {
     const words = (count: number) => `${Array.from({ length: count }, () => "go").join(" ")}.`;
-    const fits = run(argsWith({ how_you_work: words(44) }));
+    const fits = run(argsWith({ how_you_work: words(46) }));
     expect(wordCount(fits.profile.spoken_reveal)).toBe(60);
     expect(fits.debug.replaced).toEqual([]);
 
-    const over = run(argsWith({ how_you_work: words(45) }));
+    const over = run(argsWith({ how_you_work: words(47) }));
     expect(over.profile.how_you_work).toBe(howYouWorkFromRow(RNT));
     expect(wordCount(over.profile.spoken_reveal)).toBeLessThanOrEqual(REVEAL_MAX_WORDS);
     expect(over.debug.replaced).toEqual(["how_you_work (over 60 words)"]);

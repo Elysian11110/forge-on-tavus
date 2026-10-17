@@ -36,7 +36,7 @@ export function asSentence(text: string): string {
 
 /** The type is called: how_you_work is the checked model line or its gloss template. */
 export function calledReveal(howYouWork: string, callsign: string): string {
-  return `Okay, here's what I'm seeing. ${asSentence(howYouWork)} In TRC, that's the ${callsign} lens. What fits, and what doesn't?`;
+  return `Okay, here's what I'm seeing. ${asSentence(howYouWork)} That's the ${callsign} lens. What fits, and what doesn't?`;
 }
 
 /** F01: no type yet; ends on the hunch-bank question for the likeliest lens. */

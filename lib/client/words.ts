@@ -1,6 +1,6 @@
 // Lines keyed by a code or filled in by code: the refusal lines by trigger, and the time check the
 // browser sends Forge. One-off screen copy lives in its component. Words the server also uses
-// (confidence, glosses, pattern labels, instincts, the TRC credit) come from the corpus through
+// (confidence, glosses, pattern labels, instincts) come from the corpus through
 // lib/synth, so screen and voice match.
 
 import type { TriggerId } from "@/lib/types";
