@@ -4,7 +4,7 @@ import { useParticipantIds } from '@daily-co/daily-react';
 
 // Forge patch: the shipped CLI filters on 'tavus-replica' while the hooks docs
 // say 'tavus-face'; accept either until a live call confirms the real user_id.
-// When neither matches, the only other participant is Forge: the room is private
+// When neither matches, the only other participant is Veronica: the room is private
 // and capped at two, so a surprise user_id cannot leave the call silent and faceless.
 export const useReplicaIDs = (): string[] => {
 	const replicasIDs = useParticipantIds({

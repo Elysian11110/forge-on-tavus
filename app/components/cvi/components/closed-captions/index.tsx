@@ -87,8 +87,8 @@ export const ClosedCaptions = memo(() => {
 			<span
 				className={`${styles.role} ${caption.role === 'user' ? styles.roleUser : styles.roleReplica}`}
 			>
-				{/* Forge patch: the speaker is Forge, not the stock 'PAL' label. */}
-				{caption.role === 'user' ? 'You' : 'Forge'}
+				{/* Forge patch: the speaker is Veronica, not the stock 'PAL' label. */}
+				{caption.role === 'user' ? 'You' : 'Veronica'}
 			</span>
 			<span className={styles.text}>
 				<span className={styles.textInner}>{caption.text}</span>

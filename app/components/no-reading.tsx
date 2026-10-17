@@ -4,7 +4,7 @@ import type { Goal } from "@/lib/types";
 
 /** Why there is no reading, by who ended the call. */
 const WHY_NO_READING: Record<CallEnding, string> = {
-  forge: "I didn't get enough to call it, and I won't guess.",
+  pal: "I didn't get enough to call it, and I won't guess.",
   person: "We stopped before I had enough to go on, so I won't guess.",
   never_connected: "The call didn't connect, so there's nothing to read. Give it a minute and try again.",
 };

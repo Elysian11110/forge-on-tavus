@@ -15,7 +15,7 @@ const HEADER =
 
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
-/** Under F05 there is no reading to walk; Forge only points to the goals, if any, and closes. */
+/** Under F05 there is no reading to walk; Veronica only points to the goals, if any, and closes. */
 export function f05Rundown(goalsOnScreen: boolean): string {
   return (
     "Checked rundown from Forge's server: no reading this time, since there weren't enough of their stories to go on. Name no type. " +

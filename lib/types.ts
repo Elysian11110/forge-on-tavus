@@ -173,7 +173,7 @@ export interface Profile {
   rundown_context: string;
 }
 
-/** The per-call record behind the presenter log and the model choice. */
+/** The server's per-call record of what the model sent and what survived the checks. */
 export interface Debug {
   evidence_sent: number;
   evidence_matched: number;
@@ -258,13 +258,11 @@ export const SIGNATURE_HEADER = "x-tavus-signature";
 
 export type StoreKind = "upstash" | "memory";
 
-// 400 bad_request or consent_required, 401 passcode, 403 forbidden, 404 not_found, 409 call_live,
-// 429 too_many_tries, 502 tavus, 503 store_unavailable or not_configured.
+// 400 bad_request or consent_required, 403 forbidden, 404 not_found, 409 call_live, 502 tavus,
+// 503 store_unavailable or not_configured.
 export type ApiErrorCode =
   | "bad_request"
   | "consent_required"
-  | "passcode"
-  | "too_many_tries"
   | "forbidden"
   | "not_found"
   | "call_live"
@@ -280,7 +278,6 @@ export interface ApiError {
 export interface CreateSessionRequest {
   consent: boolean;
   firstName?: string;
-  passcode?: string;
 }
 
 // Browser timings for the arc, in seconds from T0, plus the call cap sent to Tavus.
@@ -288,7 +285,7 @@ export interface SessionTiming {
   arc: Arc;
   /** max_call_duration: 300 on the 5-minute arc, 600 on 7. */
   maxCallSec: number;
-  /** When the time-check note goes to Forge: 165 (2:45) or 255 (4:15). */
+  /** When the time-check note goes to Veronica: 165 (2:45) or 255 (4:15). */
   timeCheckSec: number;
   /** When "No reading this time" shows if nothing arrived: 240 (4:00) or 390 (6:30). */
   watchdogSec: number;

@@ -3,7 +3,7 @@ import { GoalCard } from "@/app/components/goal-card";
 import { GoalChips } from "@/app/components/goal-chips";
 import type { Goal, Profile } from "@/lib/types";
 
-/** While the call is live: the callsign, the bridge chips and the goal cards Forge walks through. */
+/** While the call is live: the callsign, the bridge chips and the goal cards Veronica walks through. */
 export function LiveRundown({ profile, goals }: { profile: Profile; goals: Goal[] }) {
   return (
     <section className="animate-rise space-y-6">

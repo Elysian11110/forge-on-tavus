@@ -8,7 +8,7 @@ const LINKS: Record<string, string> = {
   "findahelpline.com": "https://findahelpline.com",
 };
 
-export function CrisisLine({ line }: { line: string }) {
+function CrisisLine({ line }: { line: string }) {
   return (
     <>
       {line.split(/(116 123|988|findahelpline\.com)/).map((part, index) =>

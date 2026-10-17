@@ -12,7 +12,7 @@ import type { SessionRef } from "@/lib/client/api";
 import type { CallEnding } from "@/lib/client/forge-state";
 import type { Goal, Profile } from "@/lib/types";
 
-/** How long to wait for a reading after the call ends: longer if Forge had started putting it together. */
+/** How long to wait for a reading after the call ends: longer if Veronica had started putting it together. */
 const WAIT_IF_SYNTHESIZING_MS = 30_000;
 const WAIT_OTHERWISE_MS = 8_000;
 
@@ -27,7 +27,6 @@ interface ResultScreenProps {
   deleted: { tavusConfirmed: boolean } | null;
   crisisLine: string;
   onDeleted: (tavusConfirmed: boolean) => void;
-  log: (line: string) => void;
 }
 
 /** What the page shows: the rundown, the honest no-reading note, the crisis card, or the all-gone note. */
@@ -36,7 +35,7 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
   if (deleted) return <AllGone tavusConfirmed={deleted.tavusConfirmed} />;
   if (crisis || profile?.status === "withheld_for_safety") return <CrisisCard line={props.crisisLine} />;
   if (profile) {
-    // Under F05 the profile has no goal cards, yet Forge just said the goals are on screen: list them.
+    // Under F05 the profile has no goal cards, yet Veronica just said the goals are on screen: list them.
     return (
       <>
         <Rundown profile={profile} />
@@ -58,7 +57,7 @@ function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
 }
 
 /** The result page as it looks: the mark, the body, and the two quiet actions under it. */
-export function ResultLayout({ body, actions }: { body: ReactNode; actions: ReactNode }) {
+function ResultLayout({ body, actions }: { body: ReactNode; actions: ReactNode }) {
   return (
     <main className="min-h-dvh">
       <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-8">
@@ -91,7 +90,7 @@ export function ResultScreen(props: ResultScreenProps) {
               Talk again
             </button>
           )}
-          {!deleted && <DeleteMyData session={props.session} onDeleted={props.onDeleted} log={props.log} />}
+          {!deleted && <DeleteMyData session={props.session} onDeleted={props.onDeleted} />}
         </>
       }
     />

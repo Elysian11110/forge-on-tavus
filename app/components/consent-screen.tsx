@@ -5,7 +5,7 @@ import type { ActiveSession } from "@/lib/client/forge-state";
 import type { Arc } from "@/lib/types";
 
 /** The landing as it looks: the mark, one headline, one subline, and the form beside it. */
-export function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
+function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
   return (
     <main className="relative min-h-dvh overflow-hidden">
       <div aria-hidden className="grid-faint pointer-events-none absolute inset-0" />
@@ -20,8 +20,8 @@ export function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
               <span className="type-heat block">work.</span>
             </h1>
             <p className="mt-6 max-w-md text-lg text-quiet sm:mt-10">
-              {arc === 7 ? "Seven" : "Five"} minutes on video with a friend who knows way too much about
-              personality types. Tell a few stories, leave with your type and a next move for each goal.
+              {arc === 7 ? "Seven" : "Five"} minutes on video with Veronica, a friend who knows way too much
+              about personality types. Tell a few stories, leave with your type and a next move for each goal.
             </p>
           </div>
 
@@ -32,16 +32,10 @@ export function Landing({ arc, children }: { arc: Arc; children: ReactNode }) {
   );
 }
 
-interface ConsentScreenProps {
-  arc: Arc;
-  askPasscode: boolean;
-  onStarted: (session: ActiveSession) => void;
-}
-
-export function ConsentScreen({ arc, askPasscode, onStarted }: ConsentScreenProps) {
+export function ConsentScreen({ arc, onStarted }: { arc: Arc; onStarted: (session: ActiveSession) => void }) {
   return (
     <Landing arc={arc}>
-      <SayHiForm askPasscode={askPasscode} onStarted={onStarted} />
+      <SayHiForm onStarted={onStarted} />
     </Landing>
   );
 }

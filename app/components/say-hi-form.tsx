@@ -7,49 +7,39 @@ import type { ActiveSession } from "@/lib/client/forge-state";
 import type { CreateSessionResponse } from "@/lib/types";
 
 const CONSENT_TEXT =
-  "I'm 18 or older, I know Forge is an AI that reads my expressions and tone to pace the chat, and what I say is kept for 24 hours so I can see my results.";
+  "I'm 18 or older, I know Veronica is an AI that reads my expressions and tone to pace the chat, and what I say is kept for 24 hours so I can see my results.";
 
-export const MIC_PROBLEM_TEXT: Record<MicProblem, string> = {
+const MIC_PROBLEM_TEXT: Record<MicProblem, string> = {
   missing: "No mic found. Plug one in, then try again.",
-  blocked: "Forge needs your mic to hear you. Allow it in your browser's site settings, then try again.",
+  blocked: "Veronica needs your mic to hear you. Allow it in your browser's site settings, then try again.",
   unsupported: "This browser can't open a mic here. Try the latest Chrome or Safari, on https.",
 };
 
-export type Phase = "idle" | "checking" | "calling";
+type Phase = "idle" | "checking" | "calling";
 
 const BUTTON_TEXT: Record<Phase, string> = {
-  idle: "Say hi to Forge",
+  idle: "Say hi to Veronica",
   checking: "Checking mic and camera",
-  calling: "Calling Forge",
+  calling: "Calling Veronica",
 };
 
 /** A friendly line for each way the create can fail. */
-export function failureText(reply: Extract<RouteReply<CreateSessionResponse>, { ok: false }>): string {
-  if (reply.status === 401) return "That passcode didn't work. Check it and try again.";
-  if (reply.status === 409) return "Forge is already on a call. Give it a minute, then try again.";
-  if (reply.status === 429) return "Too many tries with the wrong passcode. Wait a little, then try again.";
+function failureText(reply: Extract<RouteReply<CreateSessionResponse>, { ok: false }>): string {
+  if (reply.status === 409) return "Veronica is already on a call. Give it a minute, then try again.";
   if (reply.error === "consent_required") return "Tick the box first, then say hi.";
   if (reply.status === 502) return "Couldn't reach Tavus just now. Try again in a minute.";
   if (reply.status === 503) return "Forge isn't fully set up yet. Try again a little later.";
   return "Something got in the way. Try again in a moment.";
 }
 
-interface SayHiFormProps {
-  askPasscode: boolean;
-  onStarted: (session: ActiveSession) => void;
-}
-
-/** First name, passcode, the one consent box and the button. Devices are checked first, so a missing mic never costs a call. */
-export function SayHiForm({ askPasscode, onStarted }: SayHiFormProps) {
+/** First name, the one consent box and the button. Devices are checked first, so a missing mic never costs a call. */
+export function SayHiForm({ onStarted }: { onStarted: (session: ActiveSession) => void }) {
   const [consent, setConsent] = useState(false);
   const [firstName, setFirstName] = useState("");
-  const [passcode, setPasscode] = useState("");
-  // A 401 reveals the field, in case the server wants a passcode the page did not know about.
-  const [showPasscode, setShowPasscode] = useState(askPasscode);
   const [phase, setPhase] = useState<Phase>("idle");
   const [problem, setProblem] = useState<string | null>(null);
 
-  const ready = consent && phase === "idle" && (!showPasscode || passcode.trim() !== "");
+  const ready = consent && phase === "idle";
 
   async function sayHi(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,13 +55,8 @@ export function SayHiForm({ askPasscode, onStarted }: SayHiFormProps) {
     }
 
     setPhase("calling");
-    const reply = await createSession({
-      consent: true,
-      firstName: firstName.trim() || undefined,
-      passcode: showPasscode ? passcode : undefined,
-    });
+    const reply = await createSession({ consent: true, firstName: firstName.trim() || undefined });
     if (!reply.ok) {
-      if (reply.status === 401) setShowPasscode(true);
       setProblem(failureText(reply));
       setPhase("idle");
       return;
@@ -81,31 +66,25 @@ export function SayHiForm({ askPasscode, onStarted }: SayHiFormProps) {
 
   return (
     <SayHiView
-      showPasscode={showPasscode}
       firstName={firstName}
-      passcode={passcode}
       consent={consent}
       phase={phase}
       ready={ready}
       problem={problem}
       onFirstName={setFirstName}
-      onPasscode={setPasscode}
       onConsent={setConsent}
       onSubmit={sayHi}
     />
   );
 }
 
-export interface SayHiViewProps {
-  showPasscode: boolean;
+interface SayHiViewProps {
   firstName: string;
-  passcode: string;
   consent: boolean;
   phase: Phase;
   ready: boolean;
   problem: string | null;
   onFirstName: (value: string) => void;
-  onPasscode: (value: string) => void;
   onConsent: (value: boolean) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
@@ -126,12 +105,12 @@ const INPUT_CLASS =
   "mt-2.5 h-12 w-full border border-rule bg-page px-4 text-ink transition-colors duration-150 hover:border-quiet focus:border-ember disabled:opacity-60";
 
 /** The form as it looks, with no state of its own. */
-export function SayHiView(props: SayHiViewProps) {
+function SayHiView(props: SayHiViewProps) {
   const busy = props.phase !== "idle";
   return (
     <form onSubmit={props.onSubmit} aria-busy={busy} className="frame p-6 sm:p-8">
       <fieldset disabled={busy} className="space-y-6">
-        <Field label="What should Forge call you?" aside="Optional">
+        <Field label="What should Veronica call you?" aside="Optional">
           <input
             type="text"
             autoComplete="given-name"
@@ -141,18 +120,6 @@ export function SayHiView(props: SayHiViewProps) {
             className={INPUT_CLASS}
           />
         </Field>
-
-        {props.showPasscode && (
-          <Field label="Passcode">
-            <input
-              type="password"
-              autoComplete="off"
-              value={props.passcode}
-              onChange={(e) => props.onPasscode(e.target.value)}
-              className={INPUT_CLASS}
-            />
-          </Field>
-        )}
 
         <label className="flex cursor-pointer items-start gap-4">
           <input

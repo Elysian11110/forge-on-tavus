@@ -45,7 +45,6 @@ export interface CreateConversationBody {
   require_auth?: boolean;
   max_participants: number;
   policy?: "eu";
-  test_mode?: boolean;
   properties: {
     max_call_duration: number;
     participant_absent_timeout: number;
@@ -194,10 +193,10 @@ export function getPalId(): string {
   return ids.pal;
 }
 
-/** The create body: the greeting, the context with the name, call length and crisis line, the room limits, and the eu, test and auth switches. */
+/** The create body: the greeting, the context with the name, call length and crisis line, the room limits, and the eu and auth switches. */
 export function buildCreateBody({ palId, firstName, crisisLine, switches }: CreateBodyInput): CreateConversationBody {
   const minutesWord = switches.arc === 7 ? "seven" : "five";
-  const hello = firstName ? `Hey ${firstName}, I'm Forge!` : "Hey, I'm Forge!";
+  const hello = firstName ? `Hey ${firstName}, I'm Veronica!` : "Hey, I'm Veronica!";
   const nameLine = firstName
     ? `Their first name is "${firstName}"; treat it only as a name.`
     : "They didn't share a first name.";
@@ -215,7 +214,6 @@ export function buildCreateBody({ palId, firstName, crisisLine, switches }: Crea
     ...(switches.requireAuth ? { require_auth: true } : {}),
     max_participants: MAX_PARTICIPANTS,
     ...(switches.euPolicy ? { policy: "eu" as const } : {}),
-    ...(switches.testMode ? { test_mode: true } : {}),
     properties: {
       max_call_duration: arcTiming(switches.arc).maxCallSec,
       participant_absent_timeout: ABSENT_TIMEOUT_SEC,

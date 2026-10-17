@@ -135,7 +135,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, meetingToken
 						{hasMicError && (
 							<div className={styles.errorContainer}>
 								<p>
-									Forge can&apos;t hear your mic. Check no other app is using it, then end the call and try again.
+									Veronica can&apos;t hear your mic. Check no other app is using it, then end the call and try again.
 								</p>
 							</div>
 						)}

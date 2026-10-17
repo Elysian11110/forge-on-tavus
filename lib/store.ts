@@ -10,9 +10,6 @@ import type { Debug, Goal, GoalId, Profile, SessionView, StoreKind, UserTurn } f
 /** Every key of a call expires after 24 hours. */
 export const STORE_TTL_SECONDS = 60 * 60 * 24;
 
-/** Wrong passcodes from one address are forgotten 15 minutes after the last one. */
-export const PASSCODE_WINDOW_SECONDS = 15 * 60;
-
 /** At most this many user turns are kept per call. */
 export const MAX_USER_TURNS = 200;
 
@@ -66,10 +63,6 @@ export interface ForgeStore {
   clearSessionData(conversationId: string): Promise<void>;
   /** Removes every key of the call, token included. */
   deleteSession(conversationId: string): Promise<void>;
-  /** Wrong passcodes from one address inside the window. */
-  passcodeMisses(address: string): Promise<number>;
-  addPasscodeMiss(address: string): Promise<void>;
-  clearPasscodeMisses(address: string): Promise<void>;
 }
 
 // A user turn as stored; n is its position in arrival order, added on read.
@@ -111,10 +104,6 @@ type Field = (typeof SESSION_FIELDS)[number] | (typeof DATA_FIELDS)[number];
 
 function key(conversationId: string, field: Field): string {
   return `forge:${conversationId}:${field}`;
-}
-
-function missKey(address: string): string {
-  return `forge:passcode_misses:${address}`;
 }
 
 // Automatic deserialization is off, so values come back as the strings that were stored; a stored
@@ -272,25 +261,9 @@ class UpstashStore implements ForgeStore {
   async deleteSession(conversationId: string): Promise<void> {
     await this.redis.del(...[...SESSION_FIELDS, ...DATA_FIELDS].map((field) => key(conversationId, field)));
   }
-
-  async passcodeMisses(address: string): Promise<number> {
-    return Number(await this.redis.get(missKey(address))) || 0;
-  }
-
-  async addPasscodeMiss(address: string): Promise<void> {
-    const pipe = this.redis.pipeline();
-    pipe.incr(missKey(address));
-    pipe.expire(missKey(address), PASSCODE_WINDOW_SECONDS);
-    await pipe.exec();
-  }
-
-  async clearPasscodeMisses(address: string): Promise<void> {
-    await this.redis.del(missKey(address));
-  }
 }
 
-// Memory: one record per call and one miss count per address, kept on globalThis so dev reloads
-// and every route share them.
+// Memory: one record per call, kept on globalThis so dev reloads and every route share them.
 
 interface MemoryRecord {
   expiresAt: number;
@@ -306,14 +279,8 @@ interface MemoryRecord {
   spoken: Map<string, string>;
 }
 
-interface MissCount {
-  count: number;
-  expiresAt: number;
-}
-
 interface MemoryTables {
   sessions: Map<string, MemoryRecord>;
-  passcodeMisses: Map<string, MissCount>;
 }
 
 function emptyRecord(): MemoryRecord {
@@ -443,21 +410,6 @@ class MemoryStore implements ForgeStore {
   async deleteSession(conversationId: string): Promise<void> {
     this.tables.sessions.delete(conversationId);
   }
-
-  async passcodeMisses(address: string): Promise<number> {
-    const misses = this.tables.passcodeMisses.get(address);
-    if (!misses || misses.expiresAt <= Date.now()) return 0;
-    return misses.count;
-  }
-
-  async addPasscodeMiss(address: string): Promise<void> {
-    const count = (await this.passcodeMisses(address)) + 1;
-    this.tables.passcodeMisses.set(address, { count, expiresAt: Date.now() + PASSCODE_WINDOW_SECONDS * 1000 });
-  }
-
-  async clearPasscodeMisses(address: string): Promise<void> {
-    this.tables.passcodeMisses.delete(address);
-  }
 }
 
 const forgeGlobal = globalThis as typeof globalThis & { __forgeMemory?: MemoryTables };
@@ -500,6 +452,6 @@ export function getStore(): ForgeStore {
     return upstash.store;
   }
   if (process.env.VERCEL) throw new StoreUnavailableError();
-  forgeGlobal.__forgeMemory ??= { sessions: new Map(), passcodeMisses: new Map() };
+  forgeGlobal.__forgeMemory ??= { sessions: new Map() };
   return new MemoryStore(forgeGlobal.__forgeMemory);
 }

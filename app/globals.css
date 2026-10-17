@@ -100,7 +100,7 @@
     0 0 90px rgb(255 77 28 / 0.18);
 }
 
-/* Fraunces for words someone said, Forge or you. */
+/* Fraunces for words someone said, Veronica or you. */
 @utility type-quote {
   font-family: var(--font-fraunces), Georgia, serif;
   font-style: italic;

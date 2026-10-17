@@ -10,16 +10,16 @@ interface CallPanelProps {
   crisis: boolean;
   synthesizing: boolean;
   noReading: boolean;
-  forgeHere: boolean;
+  palHere: boolean;
   crisisLine: string;
   onEndFromCrisisCard: () => void;
 }
 
-function statusText({ profile, noReading, synthesizing, forgeHere }: CallPanelProps): string {
+function statusText({ profile, noReading, synthesizing, palHere }: CallPanelProps): string {
   if (profile) return "Your rundown is in.";
   if (noReading) return "No reading this time. Your goals are still here.";
   if (synthesizing) return "Putting it together.";
-  return forgeHere ? "Listening." : "Connecting to Forge.";
+  return palHere ? "Listening." : "Connecting to Veronica.";
 }
 
 /** Beside the video: the status line, the goal chips, then the live rundown; or the crisis card instead of all of it. */

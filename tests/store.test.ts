@@ -1,10 +1,10 @@
 // The memory backend, the one the tests and local dev run on: a repeat is stored once, the turn
-// cap holds, a call is forgotten after 24 hours, Delete my data keeps the token until Tavus
-// confirms, and wrong passcodes are counted per address. The Upstash backend speaks the same
-// interface against a live store, so it is checked by the production curl instead.
+// cap holds, a call is forgotten after 24 hours, and Delete my data keeps the token until Tavus
+// confirms. The Upstash backend speaks the same interface against a live store, so it is checked
+// by the production curl instead.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { MAX_USER_TURNS, PASSCODE_WINDOW_SECONDS, STORE_TTL_SECONDS, getStore } from "@/lib/store";
+import { MAX_USER_TURNS, STORE_TTL_SECONDS, getStore } from "@/lib/store";
 import { synthesize } from "@/lib/synthesize";
 import { SAM_CONVERSATION_ID, samGoals, samInput, samTurns } from "./fixtures/sam";
 
@@ -26,7 +26,6 @@ beforeEach(async () => {
   vi.useRealTimers();
   const store = getStore();
   await store.deleteSession(CALL);
-  await store.clearPasscodeMisses("10.0.0.1");
 });
 
 describe("the memory store", () => {
@@ -97,20 +96,5 @@ describe("the memory store", () => {
     expect((await store.getSession(CALL))?.view.state).toBe("ended");
     await store.deleteSession(CALL);
     expect(await store.getSessionToken(CALL)).toBeNull();
-  });
-
-  it("counts wrong passcodes per address for 15 minutes, and a right one clears them", async () => {
-    vi.useFakeTimers();
-    const store = getStore();
-    expect(await store.passcodeMisses("10.0.0.1")).toBe(0);
-    await store.addPasscodeMiss("10.0.0.1");
-    await store.addPasscodeMiss("10.0.0.1");
-    expect(await store.passcodeMisses("10.0.0.1")).toBe(2);
-    expect(await store.passcodeMisses("10.0.0.2")).toBe(0);
-    vi.advanceTimersByTime(PASSCODE_WINDOW_SECONDS * 1000);
-    expect(await store.passcodeMisses("10.0.0.1")).toBe(0);
-    await store.addPasscodeMiss("10.0.0.1");
-    await store.clearPasscodeMisses("10.0.0.1");
-    expect(await store.passcodeMisses("10.0.0.1")).toBe(0);
   });
 });

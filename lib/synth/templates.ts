@@ -1,4 +1,4 @@
-// Everything Forge says from code: the spoken lines, word for word, and the gloss templates that
+// Everything Veronica says from code: the spoken lines, word for word, and the gloss templates that
 // stand in for a model line that fails the lint or loses its anchor.
 
 import type { Confidence, Fn, MoveKind, PatternId } from "@/lib/types";

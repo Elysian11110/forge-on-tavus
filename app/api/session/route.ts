@@ -3,10 +3,9 @@
 
 import { setTimeout as pause } from "node:timers/promises";
 import { cleanFirstName, crisisLineFor } from "@/lib/safety";
-import { checkPasscode, newSessionToken, type PasscodeCheck } from "@/lib/server/auth";
+import { newSessionToken } from "@/lib/server/auth";
 import {
   apiError,
-  clientAddress,
   isConversationId,
   isRecord,
   json,
@@ -37,18 +36,7 @@ export async function POST(request: Request): Promise<Response> {
   const store = openStore();
   if (store instanceof Response) return store;
 
-  // Everything that can fail without spending minutes comes before the create. The passcode check
-  // is also the first store read, so a wrong Upstash token fails here, not after a billed call.
-  let passcode: PasscodeCheck;
-  try {
-    passcode = await checkPasscode(store, clientAddress(request), body.passcode);
-  } catch (error) {
-    logFailure("session: store read", error);
-    return apiError("store_unavailable", 503);
-  }
-  if (passcode === "unset") return apiError("not_configured", 503);
-  if (passcode === "locked") return apiError("too_many_tries", 429);
-  if (passcode === "wrong") return apiError("passcode", 401);
+  // Everything that can fail without spending minutes comes before the create.
   if (body.consent !== true) return apiError("consent_required", 400);
 
   let palId: string;
@@ -116,14 +104,10 @@ async function handOver(store: ForgeStore, created: CreatedConversation, switche
     await endQuietly(conversationId);
     return apiError("tavus", 502);
   }
-  if (switches.testMode) {
-    console.info(`session: test_mode create answered ${created.status}, meeting_token ${created.meeting_token ? "present" : "absent"}`);
-  }
 
   const sessionToken = newSessionToken();
   try {
     await store.createSession(conversationId, sessionToken);
-    if (created.status === "ended") await store.endSession(conversationId);
   } catch (error) {
     logFailure("session: store write", error);
     await endQuietly(conversationId);
@@ -138,9 +122,8 @@ async function handOver(store: ForgeStore, created: CreatedConversation, switche
   });
 }
 
-/** Why a created call cannot be handed to the browser: the free test-mode call must come back ended, and a private room must come with its token. */
+/** Why a created call cannot be handed to the browser: a private room must come with its token. */
 function unusableReason(created: CreatedConversation, switches: Switches): string | null {
-  if (switches.testMode) return created.status === "ended" ? null : "test_mode call came back live";
   if (switches.requireAuth && !created.meeting_token) return "require_auth call came back without a meeting_token";
   return null;
 }

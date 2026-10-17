@@ -12,18 +12,17 @@ const CRISIS_TRIES = 3;
  * order they were spoken. The crisis flag skips that queue: it has to land before Tavus's signed
  * synthesize call, whatever is still waiting in line.
  */
-export function useRelay(session: SessionRef, log: (line: string) => void) {
+export function useRelay(session: SessionRef) {
   const queue = useRef<Promise<void>>(Promise.resolve());
 
   const relay = useCallback(
     (event: EventsRequest) => {
       queue.current = queue.current.then(async () => {
-        let reply = await postEvent(session, event);
-        if (worthRetrying(reply)) reply = await postEvent(session, event);
-        log(reply.ok ? `relayed ${event.kind}` : `relay ${event.kind} failed (${reply.status || "network"})`);
+        const reply = await postEvent(session, event);
+        if (worthRetrying(reply)) await postEvent(session, event);
       });
     },
-    [session, log],
+    [session],
   );
 
   const relayCrisis = useCallback(
@@ -31,9 +30,8 @@ export function useRelay(session: SessionRef, log: (line: string) => void) {
       const event: EventsRequest = { conversationId: session.conversationId, kind: "crisis", data: { reason } };
       let reply = await postEvent(session, event);
       for (let tries = 1; tries < CRISIS_TRIES && worthRetrying(reply); tries++) reply = await postEvent(session, event);
-      log(reply.ok ? "relayed crisis" : `relay crisis failed (${reply.status || "network"})`);
     },
-    [session, log],
+    [session],
   );
 
   return { relay, relayCrisis };

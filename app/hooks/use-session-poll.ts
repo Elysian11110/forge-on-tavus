@@ -10,7 +10,6 @@ export interface SessionPollInput {
   enabled: boolean;
   /** Once the call has ended, the poll stops at this time, or as soon as a reading is in. */
   until: number | null;
-  log: (line: string) => void;
 }
 
 /**
@@ -18,7 +17,7 @@ export interface SessionPollInput {
  * a 403 or 404 means the server no longer knows the session, so the poll stops for good.
  */
 export function useSessionPoll(session: SessionRef | null, input: SessionPollInput): SessionView | null {
-  const { enabled, until, log } = input;
+  const { enabled, until } = input;
   const [view, setView] = useState<SessionView | null>(null);
   const [gone, setGone] = useState(false);
 
@@ -34,14 +33,12 @@ export function useSessionPoll(session: SessionRef | null, input: SessionPollInp
       if (stopped) return;
       if (!reply.ok && (reply.status === 403 || reply.status === 404)) {
         setGone(true);
-        log("poll stopped: the server no longer knows this session");
         return;
       }
       const next = reply.ok ? JSON.stringify(reply.data) : last;
       if (reply.ok && next !== last) {
         last = next;
         setView(reply.data);
-        if (reply.data.profile) log(`reading in: ${reply.data.profile.status}, triggers [${reply.data.profile.triggers.join(", ")}]`);
       }
       // After the call, the first reading or the end of the window is the last word.
       if (until !== null && ((reply.ok && reply.data.profile) || Date.now() >= until)) return;
@@ -54,7 +51,7 @@ export function useSessionPoll(session: SessionRef | null, input: SessionPollInp
       stopped = true;
       clearTimeout(timer);
     };
-  }, [session, enabled, until, gone, log]);
+  }, [session, enabled, until, gone]);
 
   return view;
 }

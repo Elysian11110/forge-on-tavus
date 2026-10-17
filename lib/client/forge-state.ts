@@ -10,7 +10,7 @@ export type ActiveSession = CreateSessionResponse & { voiceOnly: boolean };
 export type Screen = "consent" | "call" | "result";
 
 /** Who ended the call; it decides what the result screen says when no reading came. */
-export type CallEnding = "forge" | "person" | "never_connected";
+export type CallEnding = "pal" | "person" | "never_connected";
 
 export interface ForgeState {
   screen: Screen;
@@ -19,7 +19,7 @@ export interface ForgeState {
   goals: Goal[];
   /** The guardrail fired: no more type talk, no reading. */
   crisis: boolean;
-  /** Forge said its "putting it all together" line. */
+  /** Veronica said her "putting it all together" line. */
   synthesizing: boolean;
   /** The watchdog fired before any reading arrived. */
   noReading: boolean;

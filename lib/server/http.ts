@@ -41,11 +41,6 @@ export function isConversationId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(value);
 }
 
-/** The caller's address for the passcode miss count: Vercel writes x-forwarded-for itself, so the first entry is the client; local dev has none. */
-export function clientAddress(request: Request): string {
-  return request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
-}
-
 /** The store, or the 503 reply when Upstash is not connected on Vercel. */
 export function openStore(): ForgeStore | Response {
   try {

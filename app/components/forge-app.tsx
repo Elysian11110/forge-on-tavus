@@ -4,9 +4,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { CallScreen } from "@/app/components/call-screen";
 import { ConsentScreen } from "@/app/components/consent-screen";
 import { CVIProvider } from "@/app/components/cvi/components/cvi-provider";
-import { PresenterLog } from "@/app/components/presenter-log";
 import { ResultScreen } from "@/app/components/result-screen";
-import { usePresenterLog } from "@/app/hooks/use-presenter-log";
 import { useSessionPoll } from "@/app/hooks/use-session-poll";
 import { endSession, sendEndBeacon, worthRetrying, type SessionRef } from "@/lib/client/api";
 import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding } from "@/lib/client/forge-state";
@@ -22,58 +20,41 @@ export interface ForgeAppProps {
   /** Chosen on the server from x-vercel-ip-country. */
   crisisLine: string;
   arc: Arc;
-  askPasscode: boolean;
-  presenter: boolean;
-  testMode: boolean;
-  clock: number;
 }
 
 /** Tells the server the call is over. The route leaves it live when Tavus could not end it, so one retry is worth it. */
-async function endOnServer(session: SessionRef, log: (line: string) => void): Promise<void> {
-  let reply = await endSession(session);
-  if (worthRetrying(reply)) {
-    await new Promise((resolve) => setTimeout(resolve, END_RETRY_MS));
-    reply = await endSession(session);
-  }
-  log(reply.ok ? "end route: ended" : `end route failed (${reply.status || "network"})`);
+async function endOnServer(session: SessionRef): Promise<void> {
+  const reply = await endSession(session);
+  if (!worthRetrying(reply)) return;
+  await new Promise((resolve) => setTimeout(resolve, END_RETRY_MS));
+  await endSession(session);
 }
 
-/** The whole visit: consent, the call, the result. One reducer holds what happened; one poll reads the server's view. */
-export function ForgeApp({ crisisLine, arc, askPasscode, presenter, testMode, clock }: ForgeAppProps) {
+/** The whole visit: the landing, the call, the result. One reducer holds what happened; one poll reads the server's view. */
+export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   const [state, dispatch] = useReducer(forgeReducer, initialForgeState);
   const { session, screen, ended, deleted } = state;
-  const { lines, log, startClock } = usePresenterLog(presenter);
 
   const view = useSessionPoll(session, {
     enabled: screen !== "consent" && !deleted,
     until: ended ? ended.at + RESULT_POLL_WINDOW_MS : null,
-    log,
   });
   const profile = deleted ? null : (view?.profile ?? null);
   const goals = deleted ? [] : mergeGoals(view?.goals ?? [], state.goals);
   const crisis = state.crisis || Boolean(view?.crisis);
 
-  const start = useCallback(
-    (next: ActiveSession) => {
-      startClock();
-      dispatch({ type: "started", session: next });
-      const camera = next.voiceOnly ? "voice only" : "camera on";
-      log(`call created: ${next.conversationId}, meeting token ${next.meetingToken ? "present" : "absent"}, ${camera}`);
-    },
-    [startClock, log],
-  );
+  const start = useCallback((next: ActiveSession) => dispatch({ type: "started", session: next }), []);
 
   // End, the call controls, the room closing, the crisis card and the no-show timers all land here; the first one counts.
   const endedOnce = useRef(false);
   const endCall = useCallback(
-    (by: CallEnding, reason: string) => {
+    (by: CallEnding) => {
       if (!session || endedOnce.current) return;
       endedOnce.current = true;
-      log(`call ended (${reason})`);
-      void endOnServer(session, log);
+      void endOnServer(session);
       dispatch({ type: "ended", at: Date.now(), by });
     },
-    [session, log],
+    [session],
   );
 
   // Closing the tab mid-call ends it too, so the minutes stop.
@@ -88,50 +69,32 @@ export function ForgeApp({ crisisLine, arc, askPasscode, presenter, testMode, cl
 
   return (
     <CVIProvider>
-      <div className={presenter ? "pb-[44vh] lg:pb-[32vh]" : undefined}>
-        {screen === "consent" && (
-          <ConsentScreen arc={arc} askPasscode={askPasscode} onStarted={start} />
-        )}
-        {screen === "call" && session && (
-          <CallScreen
-            session={session}
-            goals={goals}
-            profile={profile}
-            crisis={crisis}
-            synthesizing={state.synthesizing}
-            noReading={state.noReading}
-            crisisLine={crisisLine}
-            testMode={testMode}
-            clock={clock}
-            presenter={presenter}
-            dispatch={dispatch}
-            onEnd={endCall}
-            log={log}
-          />
-        )}
-        {screen === "result" && session && ended && (
-          <ResultScreen
-            session={session}
-            profile={profile}
-            goals={goals}
-            crisis={crisis}
-            synthesizing={state.synthesizing}
-            noReading={state.noReading}
-            ended={ended}
-            deleted={deleted}
-            crisisLine={crisisLine}
-            onDeleted={(tavusConfirmed) => dispatch({ type: "deleted", tavusConfirmed })}
-            log={log}
-          />
-        )}
-      </div>
-      {presenter && (
-        <PresenterLog
-          timing={session?.timing ?? null}
-          clock={clock}
-          testMode={testMode}
-          lines={lines}
-          debug={deleted ? null : (view?.debug ?? null)}
+      {screen === "consent" && <ConsentScreen arc={arc} onStarted={start} />}
+      {screen === "call" && session && (
+        <CallScreen
+          session={session}
+          goals={goals}
+          profile={profile}
+          crisis={crisis}
+          synthesizing={state.synthesizing}
+          noReading={state.noReading}
+          crisisLine={crisisLine}
+          dispatch={dispatch}
+          onEnd={endCall}
+        />
+      )}
+      {screen === "result" && session && ended && (
+        <ResultScreen
+          session={session}
+          profile={profile}
+          goals={goals}
+          crisis={crisis}
+          synthesizing={state.synthesizing}
+          noReading={state.noReading}
+          ended={ended}
+          deleted={deleted}
+          crisisLine={crisisLine}
+          onDeleted={(tavusConfirmed) => dispatch({ type: "deleted", tavusConfirmed })}
         />
       )}
     </CVIProvider>

@@ -64,7 +64,7 @@ function endBody(session: SessionRef): EndSessionRequest {
   return { conversationId: session.conversationId, sessionToken: session.sessionToken };
 }
 
-/** POST /api/session: checks the passcode and creates the private call. Billing starts here. */
+/** POST /api/session: creates the private call. Billing starts here. */
 export function createSession(body: CreateSessionRequest): Promise<RouteReply<CreateSessionResponse>> {
   return request("/api/session", postJson(body));
 }

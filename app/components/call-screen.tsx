@@ -7,7 +7,7 @@ import { CallPanel } from "@/app/components/call-panel";
 import { VideoStage } from "@/app/components/video-stage";
 import { useAppendContext } from "@/app/hooks/use-append-context";
 import { useCallClock } from "@/app/hooks/use-call-clock";
-import { useForgeInRoom } from "@/app/hooks/use-forge-in-room";
+import { usePalInRoom } from "@/app/hooks/use-pal-in-room";
 import { useRelay } from "@/app/hooks/use-relay";
 import { useTavusEvents } from "@/app/hooks/use-tavus-events";
 import type { ActiveSession, CallEnding, ForgeAction } from "@/lib/client/forge-state";
@@ -17,14 +17,14 @@ interface CallLayoutProps {
   voiceOnly: boolean;
   crisis: boolean;
   onEnd: () => void;
-  /** Forge's face, the focal point. */
+  /** Veronica's face, the focal point. */
   stage: ReactNode;
   /** Beside the face: status, goals, then the rundown or the crisis card. */
   panel: ReactNode;
 }
 
 /** The call as it looks: the AI chip and End on top, the face, and the panel beside it. */
-export function CallLayout({ voiceOnly, crisis, onEnd, stage, panel }: CallLayoutProps) {
+function CallLayout({ voiceOnly, crisis, onEnd, stage, panel }: CallLayoutProps) {
   return (
     <main className="min-h-dvh">
       <div className="mx-auto w-full max-w-[90rem] px-4 py-4 sm:px-8 lg:px-12 lg:py-6">
@@ -63,20 +63,15 @@ interface CallScreenProps {
   synthesizing: boolean;
   noReading: boolean;
   crisisLine: string;
-  /** The call was created as ended: nothing to join, fixtures instead. */
-  testMode: boolean;
-  clock: number;
-  presenter: boolean;
   dispatch: Dispatch<ForgeAction>;
-  onEnd: (by: CallEnding, reason: string) => void;
-  log: (line: string) => void;
+  onEnd: (by: CallEnding) => void;
 }
 
 export function CallScreen(props: CallScreenProps) {
-  const { session, goals, profile, crisis, synthesizing, noReading, testMode, dispatch, onEnd, log } = props;
+  const { session, goals, profile, crisis, synthesizing, noReading, dispatch, onEnd } = props;
   const { conversationId } = session;
   const meetingState = useMeetingState();
-  const live = !testMode && meetingState === "joined-meeting";
+  const live = meetingState === "joined-meeting";
 
   // Facts the timers and handlers read at the moment they fire.
   const now = useRef({ crisis, profile, synthesizing });
@@ -84,23 +79,21 @@ export function CallScreen(props: CallScreenProps) {
     now.current = { crisis, profile, synthesizing };
   });
 
-  const { relay, relayCrisis } = useRelay(session, log);
-  const { joinedAt, forgeHere } = useForgeInRoom(testMode, onEnd, log);
+  const { relay, relayCrisis } = useRelay(session);
+  const { joinedAt, palHere } = usePalInRoom(onEnd);
   const sendContext = useAppendContext(conversationId, live);
   const { markPalSpeaking } = useCallClock({
     timing: session.timing,
-    clock: props.clock,
     joinedAt,
     sendContext,
     shouldNudge: () => !now.current.crisis && !now.current.profile && !now.current.synthesizing,
     hasReading: () => now.current.profile !== null,
     isSynthesizing: () => now.current.synthesizing,
     onWatchdog: () => dispatch({ type: "watchdog" }),
-    log,
   });
 
   const crisisRelayed = useRef(false);
-  const handleEvent = useTavusEvents({
+  useTavusEvents({
     onGoal: (goal, toolCallId) => {
       dispatch({ type: "goal", goal });
       relay({ conversationId, kind: "goal", data: { ...goal, tool_call_id: toolCallId } });
@@ -117,45 +110,30 @@ export function CallScreen(props: CallScreenProps) {
       void relayCrisis(reason);
     },
     onPalSpeaking: markPalSpeaking,
-    onSynthesizing: () => {
-      if (!now.current.synthesizing) log("Forge is putting it together");
-      dispatch({ type: "synthesizing" });
-    },
-    onRaw: (event) => log(`event ${JSON.stringify(event)}`),
+    onSynthesizing: () => dispatch({ type: "synthesizing" }),
   });
 
-  // Once the reading is in, hand Forge the checked rundown, once, to walk through.
+  // Once the reading is in, hand Veronica the checked rundown, once, to walk through.
   const rundownSent = useRef(false);
   useEffect(() => {
-    if (!profile || rundownSent.current || crisis) return;
+    if (!profile || rundownSent.current || crisis || !live) return;
     if (profile.status === "withheld_for_safety" || !profile.rundown_context) return;
-    if (!testMode && !live) return;
     rundownSent.current = true;
-    const sent = sendContext(profile.rundown_context);
-    log(`${sent ? "rundown sent" : "rundown not sent (no live room)"}: ${profile.rundown_context}`);
-  }, [profile, crisis, live, testMode, sendContext, log]);
+    sendContext(profile.rundown_context);
+  }, [profile, crisis, live, sendContext]);
 
   // The leave button in the call controls. Conversation calls this on a room error too; the room watch ends that one.
   const leaveFromControls = useCallback(() => {
     if (meetingState === "error") return;
-    onEnd("person", "left from the call controls");
+    onEnd("person");
   }, [meetingState, onEnd]);
 
   return (
     <CallLayout
       voiceOnly={session.voiceOnly}
       crisis={crisis}
-      onEnd={() => onEnd("person", "End call button")}
-      stage={
-        <VideoStage
-          session={session}
-          testMode={testMode}
-          presenter={props.presenter}
-          onEvent={handleEvent}
-          onLeave={leaveFromControls}
-          log={log}
-        />
-      }
+      onEnd={() => onEnd("person")}
+      stage={<VideoStage session={session} onLeave={leaveFromControls} />}
       panel={
         <CallPanel
           goals={goals}
@@ -163,9 +141,9 @@ export function CallScreen(props: CallScreenProps) {
           crisis={crisis}
           synthesizing={synthesizing}
           noReading={noReading}
-          forgeHere={forgeHere}
+          palHere={palHere}
           crisisLine={props.crisisLine}
-          onEndFromCrisisCard={() => onEnd("person", "crisis card")}
+          onEndFromCrisisCard={() => onEnd("person")}
         />
       }
     />

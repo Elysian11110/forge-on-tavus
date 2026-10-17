@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { deleteSession, type SessionRef } from "@/lib/client/api";
 
-export type Deletion = { kind: "idle" } | { kind: "confirming" } | { kind: "busy" } | { kind: "failed"; message: string };
+type Deletion = { kind: "idle" } | { kind: "confirming" } | { kind: "busy" } | { kind: "failed"; message: string };
 
 /** A 2xx from the hard delete, or Tavus saying it is already gone. */
 function tavusConfirmed(status: number | null): boolean {
@@ -13,22 +13,19 @@ function tavusConfirmed(status: number | null): boolean {
 interface DeleteMyDataProps {
   session: SessionRef;
   onDeleted: (tavusConfirmed: boolean) => void;
-  log: (line: string) => void;
 }
 
 /** The quiet button that wipes Forge's copy and asks Tavus to hard-delete the conversation, after one "are you sure". */
-export function DeleteMyData({ session, onDeleted, log }: DeleteMyDataProps) {
+export function DeleteMyData({ session, onDeleted }: DeleteMyDataProps) {
   const [deletion, setDeletion] = useState<Deletion>({ kind: "idle" });
 
   async function deleteMyData() {
     setDeletion({ kind: "busy" });
     const reply = await deleteSession(session);
     if (reply.ok) {
-      log(`deleted: Forge's copy gone, Tavus hard delete answered ${reply.data.tavusStatus ?? "nothing"}`);
       onDeleted(tavusConfirmed(reply.data.tavusStatus));
       return;
     }
-    log(`delete failed (${reply.status || "network"})`);
     const alreadyGone = reply.status === 403 || reply.status === 404;
     setDeletion({
       kind: "failed",
@@ -49,7 +46,7 @@ interface DeleteMyDataViewProps {
 const QUIET_BUTTON = "min-h-11 text-quiet underline decoration-rule underline-offset-6 transition-colors duration-150 hover:text-ink";
 
 /** The delete control as it looks, with no state of its own. */
-export function DeleteMyDataView({ deletion, onAsk, onCancel, onDelete }: DeleteMyDataViewProps) {
+function DeleteMyDataView({ deletion, onAsk, onCancel, onDelete }: DeleteMyDataViewProps) {
   if (deletion.kind === "confirming" || deletion.kind === "busy") {
     const busy = deletion.kind === "busy";
     return (
