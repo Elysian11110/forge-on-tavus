@@ -70,22 +70,25 @@ export async function POST(request: Request): Promise<Response> {
   if (store instanceof Response) return store;
 
   let stored: StoredSession | null;
-  let context: SynthesisContext;
-  let cached: string | null;
   try {
-    [stored, context, cached] = await Promise.all([
-      store.getSession(conversationId),
-      store.getSynthesisContext(conversationId),
-      store.getReportUrl(conversationId),
-    ]);
+    stored = await store.getSession(conversationId);
   } catch (error) {
     logFailure("report: store read", error);
     return apiError("store_unavailable", 503);
   }
   const denied = tokenError(token, stored?.sessionToken ?? null);
   if (denied || !stored) return denied ?? apiError("not_found", 404);
+
+  let context: SynthesisContext;
+  let cached: string | null;
+  try {
+    [context, cached] = await Promise.all([store.getSynthesisContext(conversationId), store.getReportUrl(conversationId)]);
+  } catch (error) {
+    logFailure("report: store read", error);
+    return apiError("store_unavailable", 503);
+  }
   // After a crisis no reading is given, and that includes this one.
-  if (context.crisis || context.profile?.status === "withheld_for_safety") return apiError("forbidden", 403);
+  if (context.crisis || context.profile?.status === "withheld_for_safety") return apiError("withheld", 403);
   const cachedReport = cached ? decodeReport(encodedFromUrl(cached) ?? "") : null;
   if (cached && cachedReport) return json<ReportResponse>({ url: cached, preview: previewOf(cachedReport) });
 

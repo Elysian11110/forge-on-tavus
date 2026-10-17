@@ -31,7 +31,7 @@ export function useFullReport(session: SessionRef | null, ready: boolean): { bui
     const reply = await withRetries(() => fetchReport(session), RETRY_DELAY_MS);
     if (reply.ok) setBuild({ kind: "ready", url: reply.data.url, preview: reply.data.preview });
     else if (reply.status === 422) setBuild({ kind: "not_enough" });
-    else if (reply.status === 403) setBuild({ kind: "hidden" });
+    else if (reply.error === "withheld") setBuild({ kind: "hidden" });
     else setBuild({ kind: "failed" });
   }, [session]);
 

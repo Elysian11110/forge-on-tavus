@@ -60,46 +60,8 @@ export type ProfileStatus = "complete" | "partial" | "insufficient" | "withheld_
 // call's backstop.
 export type Arc = 5 | 30;
 
-// Daily app messages from Tavus, read with useObservableEvent<T>.
-
 // Who spoke; "replica" is the legacy duplicate of "pal" and is ignored everywhere.
 export type Role = "user" | "pal" | "replica";
-
-// Fields every Tavus broadcast may carry: seq orders events, turn_idx groups one turn.
-export interface TavusEventMeta {
-  message_type?: string;
-  conversation_id?: string;
-  seq?: number;
-  turn_idx?: number;
-  timestamp?: number;
-}
-
-// conversation.tool_call: arguments is a JSON string, and tool_call_id can be missing.
-export type ToolCall = TavusEventMeta & {
-  event_type: "conversation.tool_call";
-  inference_id?: string;
-  properties: { name: string; arguments: string; tool_call_id?: string };
-};
-
-// conversation.utterance: Raven's notes ride on user turns only.
-export type Utterance = TavusEventMeta & {
-  event_type: "conversation.utterance";
-  inference_id?: string;
-  properties: { role: Role; speech: string; user_audio_analysis?: string; user_visual_analysis?: string };
-};
-
-// conversation.started_speaking: the first one from the pal sets T0.
-export type Speaking = TavusEventMeta & {
-  event_type: "conversation.started_speaking";
-  inference_id?: string;
-  properties: { role: Role };
-};
-
-// The crisis guardrail's app message; its event name is undocumented, so it is matched on properties.
-export type Guardrail = TavusEventMeta & {
-  event_type?: string;
-  properties: { guardrail: "crisis_self_harm"; reason?: string };
-};
 
 // What the store keeps for one call.
 
@@ -267,6 +229,7 @@ export type ApiErrorCode =
   | "bad_request"
   | "consent_required"
   | "forbidden"
+  | "withheld"
   | "not_found"
   | "call_live"
   | "tavus"
@@ -323,8 +286,6 @@ export interface CrisisEventData {
   reason: string | null;
 }
 
-export type ForgeEventKind = "goal" | "user_turn" | "crisis";
-
 // POST /api/events, with the x-forge-session header.
 export type EventsRequest =
   | { conversationId: string; kind: "goal"; data: GoalEventData }
@@ -334,16 +295,6 @@ export type EventsRequest =
 // POST /api/events 200, also for a repeat the store already had.
 export interface EventsResponse {
   ok: true;
-}
-
-// POST /api/tools/synthesize-profile, from Tavus, keys sorted; arguments is the model's JSON string.
-export interface SynthesizeEnvelope {
-  arguments: string;
-  conversation_id: string;
-  inference_id: string;
-  name: string;
-  tool_call_id: string;
-  turn_idx: number;
 }
 
 // POST /api/session/end; the token rides in the body so the tab-close beacon can send it.

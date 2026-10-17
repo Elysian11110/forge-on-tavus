@@ -14,7 +14,7 @@ import { SIGNATURE_HEADER, STORE_HEADER, type StoreKind } from "@/lib/types";
 
 // The turn that triggered this call reaches the store through the browser, a different path from
 // Tavus's call, so it can land a moment later: how long to wait for it, and how often to look.
-const TURN_WAIT_MS = 3000;
+const TURN_WAIT_MS = 8000;
 const TURN_POLL_MS = 250;
 
 const PLAIN_TEXT = { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" };
