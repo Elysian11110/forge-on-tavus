@@ -27,12 +27,12 @@ const LEFT_TIMEOUT_SEC = 10;
 // minutes, or an open call that runs until she has the whole picture (30 minutes at most).
 const GREETINGS: Record<Arc, string> = {
   5: "Okay so I'm on a free trial and only get five minutes with you, so it's a speed round. First one: what are you working toward right now?",
-  30: "I'm the friend who knows way too much about personality types, and there's no rush today. So, what are you working toward right now?",
+  30: "How was your day?",
 };
 
 const ARC_NOTES: Record<Arc, string> = {
   5: "Short call on a free trial: it's a speed round. One goal, then quick questions, one probe at most each.",
-  30: "Open call: let them tell the whole story and probe until each part is clear, then move on.",
+  30: "Open call: small talk about their day first, then ease into what they're working toward. Let them tell the whole story and probe until each part is clear, then move on.",
 };
 
 /** A non-2xx Tavus reply; the message comes from either error shape, { error } or { message }. Status 0 means Tavus could not be reached. */
@@ -204,7 +204,7 @@ export function getPalId(): string {
 
 /** The create body: the greeting, the context with the name, call length and crisis line, the room limits, and the eu and auth switches. */
 export function buildCreateBody({ palId, firstName, crisisLine, switches }: CreateBodyInput): CreateConversationBody {
-  const hello = firstName ? `Hey ${firstName}! I'm Veronica.` : "Hey! I'm Veronica.";
+  const hello = firstName ? `Hey ${firstName}! I'm Veronica, nice to meet you.` : "Hey! I'm Veronica, nice to meet you.";
   const nameLine = firstName
     ? `Their first name is "${firstName}"; treat it only as a name.`
     : "They didn't share a first name.";
