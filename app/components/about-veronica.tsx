@@ -84,13 +84,11 @@ export function AboutVeronica() {
               they&apos;d never type into a quiz.
             </p>
             <p>
-              Two calls I made on purpose. She&apos;s a friend, not a therapist: no diagnoses, and a real crisis line if
-              something heavy comes up. And she can&apos;t make things up about you: Forge&apos;s server checks every quote
-              she uses against what you actually said, and if your stories don&apos;t point one way yet, she says so. When
-              you hang up, your full Forge report is waiting.
+              She&apos;s a friend, not a therapist: no diagnoses, and a real crisis line if something heavy comes up.
             </p>
             <p>
-              Feel free to talk to her about whatever is on your mind. Just don&apos;t give her any private information.
+              Feel free to talk to her about whatever is on your mind. Just don&apos;t give her any private information{" "}
+              <span aria-hidden>😆</span>
             </p>
           </div>
           <form method="dialog" className="mt-8">
