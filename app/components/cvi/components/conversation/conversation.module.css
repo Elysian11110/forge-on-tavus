@@ -14,10 +14,10 @@
 	justify-content: center;
 	aspect-ratio: 9/16;
 	overflow: hidden;
-	border-radius: 0.5rem;
-	max-height: 90vh;
-	/* Forge patch: the brand's raised surface instead of the stock grey gradient (its keyframes went too). */
-	background: var(--bg-elev);
+	/* Forge patch: square corners, the brand's deep card, and a phone-height cap so the goal chips show under the face. */
+	border-radius: 0;
+	max-height: min(90vh, 64dvh);
+	background: var(--card-deep);
 }
 
 /* Aspect ratio tracks the wrapper's actual width: portrait when narrow
@@ -25,6 +25,7 @@
 @container conversation (min-width: 768px) {
 	.container {
 		aspect-ratio: 16/9;
+		max-height: 90vh;
 	}
 }
 
@@ -73,23 +74,22 @@
 }
 
 .leaveButton {
-	background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-	color: white;
+	background-color: var(--ember);
+	color: var(--bg);
 	border: none;
 	font-size: 16px;
 	cursor: pointer;
-	transition: all 0.3s ease;
+	transition: background-color 150ms ease-out;
 	height: 3rem;
 	width: 3rem;
 	border-radius: 9999px;
-	background-color: #ef4444;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .leaveButton:hover {
-	opacity: 0.8;
+	background-color: var(--ember-hot);
 }
 
 .leaveButtonIcon {
@@ -136,7 +136,8 @@
 	background: rgba(2, 6, 23, 0.3);
 	aspect-ratio: 1/1;
 	width: 6rem;
-	border-radius: 0.75rem;
+	border-radius: 2px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
 	overflow: hidden;
 	z-index: 10;
 }

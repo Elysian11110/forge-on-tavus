@@ -56,8 +56,9 @@
 	align-items: center;
 	gap: 0.2rem;
 	padding: 0.625rem 1rem;
-	border-radius: 0.625rem;
-	background-color: rgba(2, 6, 23, 0.7);
+	/* Forge patch: square corners and the brand's near-black and role colors. */
+	border-radius: 2px;
+	background-color: rgba(10, 10, 12, 0.72);
 	backdrop-filter: blur(8px);
 	color: white;
 	font-size: 0.95rem;
@@ -77,11 +78,11 @@
 }
 
 .roleReplica {
-	color: #93c5fd;
+	color: #ff6b3a;
 }
 
 .roleUser {
-	color: #fcd34d;
+	color: #c8c9cf;
 }
 
 .text {

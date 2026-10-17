@@ -1,52 +1,53 @@
-// Small brand pieces shared by the screens: the wordmark, the AI chip, the breathing status and
-// the TRC credit.
+// Small brand pieces shared by the screens: the Forge mark and wordmark, the AI chip and the live
+// status line.
 
-import { corpus } from "@/lib/synth/corpus";
+/** The Forge site's mark: a voice wave stood up into a spine, ember-dim edges to an ember-hot core. */
+export function ForgeMark({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 128 128" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id="forge-spine" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--ember-dim)" />
+          <stop offset="0.5" stopColor="var(--ember-hot)" />
+          <stop offset="1" stopColor="var(--ember-dim)" />
+        </linearGradient>
+      </defs>
+      <g fill="url(#forge-spine)">
+        <rect x="7" y="56" width="18" height="16" rx="8" />
+        <rect x="103" y="56" width="18" height="16" rx="8" />
+        <rect x="31" y="48" width="18" height="32" rx="9" />
+        <rect x="79" y="48" width="18" height="32" rx="9" />
+        <rect x="55" y="20" width="18" height="88" rx="9" />
+      </g>
+    </svg>
+  );
+}
 
 export function Wordmark() {
-  return <p className="type-display text-2xl text-ink">Forge</p>;
+  return (
+    <p className="flex items-center gap-2.5 text-[22px] font-medium tracking-[-0.03em] text-ink">
+      <ForgeMark />
+      Forge
+    </p>
+  );
 }
 
 /** Stays up for the whole call, in case Tavus's own disclosure banner doesn't render in a custom UI. */
 export function AiChip() {
   return (
-    <span className="type-label inline-flex items-center rounded-full border border-line px-3 py-1.5 text-ink">
+    <span className="type-label inline-flex h-9 items-center gap-2.5 border border-rule px-3 text-ink">
+      <span aria-hidden className="size-1.5 bg-ember" />
       AI · not a therapist
     </span>
   );
 }
 
-/** A status line with the breathing mark: calm, no spinner, no bouncing dots. */
+/** A status line led by the breathing ember square: calm, no spinner, no bouncing dots. */
 export function StatusLine({ text, live = true }: { text: string; live?: boolean }) {
   return (
-    <p role="status" aria-live="polite" className="flex items-center gap-3 text-quiet">
-      <span
-        aria-hidden
-        className={`size-2.5 shrink-0 rounded-full ${live ? "animate-breathe bg-forge-teal" : "bg-quiet"}`}
-      />
+    <p role="status" aria-live="polite" className="flex items-center gap-3 text-ink-body">
+      <span aria-hidden className={`size-2 shrink-0 ${live ? "animate-breathe bg-ember" : "bg-rule"}`} />
       {text}
     </p>
-  );
-}
-
-/** The CC BY 4.0 attribution from the corpus, which also says which words are Forge's own; the license is linked. */
-export function TrcCredit() {
-  const { notice, license, license_url: licenseUrl } = corpus.credit.trc;
-  const [before, ...rest] = notice.split(license);
-  const link = (
-    <a href={licenseUrl} target="_blank" rel="noreferrer" className="underline underline-offset-4">
-      {license}
-    </a>
-  );
-  return rest.length > 0 ? (
-    <>
-      {before}
-      {link}
-      {rest.join(license)}
-    </>
-  ) : (
-    <>
-      {notice} {link}
-    </>
   );
 }
