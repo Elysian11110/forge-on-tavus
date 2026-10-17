@@ -9,7 +9,7 @@ const START_DELAY_MS = 3000;
 
 type Build = { kind: "building" } | { kind: "ready"; url: string } | { kind: "failed"; message: string };
 
-/** The full seven-system Forge report, built after the call by the Forge site's own engine. */
+/** The full seven-system Forge report, built after the call by the Forge site's engine and pinned to the reading on this screen. */
 export function FullReport({ session }: { session: SessionRef }) {
   const [build, setBuild] = useState<Build>({ kind: "building" });
 
@@ -34,7 +34,7 @@ export function FullReport({ session }: { session: SessionRef }) {
   return (
     <section aria-live="polite" className="frame p-6 sm:p-8">
       <p className="stamp">Your full Forge report</p>
-      <p className="mt-4 text-lg text-ink-body">Seven systems, read from everything you told Veronica.</p>
+      <p className="mt-4 text-lg text-ink-body">The reading Veronica gave you, read wider: seven systems, your goals and your own words.</p>
       <div className="mt-6">
         {build.kind === "building" && <StatusLine text="Building it now. This takes about a minute and a half." />}
         {build.kind === "ready" && (

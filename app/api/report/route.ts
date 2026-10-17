@@ -1,28 +1,22 @@
-// POST /api/report: after the call, the full seven-system Forge report, built by the Forge site's own
-// engine from what the person said. Their turns go to the site's free-text extractor, the life
-// phase it returns goes to its unified scorer, and the result comes back as the site's own
-// shared-report link (the report lives in the link, nothing is kept on the Forge site).
+// POST /api/report: after the call, the full seven-system Forge report, hosted by the Forge site
+// and pinned to the reading the person already saw. Their turns go to the site's free-text
+// extractor; the life phase it returns goes to the site's unified scorer along with the reading
+// from the call, the goals and their own words; then lib/report/compose rewrites the scorer's
+// Jungian, Socionics and Enneagram to the screen's and keeps the rest of its narrative only where
+// it contradicts nothing. The result is the site's own shared-report link (the report lives in
+// the link, nothing is kept on the Forge site).
 
 import { apiError, isConversationId, isRecord, json, logFailure, openStore, readJsonBody, tokenError } from "@/lib/server/http";
 import type { StoredSession, SynthesisContext } from "@/lib/store";
+import { MIN_TEXT_CHARS, enginePhase, pinReport, storyText } from "@/lib/report/compose";
+import { FORGE_SITE, readSiteReport, reportUrl } from "@/lib/report/site";
 import { SESSION_HEADER, type ReportResponse } from "@/lib/types";
 
 // The unified scorer takes about a minute and a half, longer on a long call.
 export const maxDuration = 300;
 
-const FORGE_SITE = "https://forge-jet.vercel.app";
-// The extractor's own input cap.
-const MAX_TEXT_CHARS = 10_000;
-// Below this there isn't enough of their own words to read anything from.
-const MIN_TEXT_CHARS = 200;
 const EXTRACT_TIMEOUT_MS = 60_000;
 const SCORE_TIMEOUT_MS = 280_000;
-
-/** Their own words in the order they said them, goals first. */
-function storyText({ goals, turns }: SynthesisContext): string {
-  const goalLines = goals.map((goal) => `Working toward: ${goal.user_quote || goal.goal}`);
-  return [...goalLines, ...turns.map((turn) => turn.speech)].join("\n").slice(0, MAX_TEXT_CHARS);
-}
 
 async function postToForge(path: string, body: unknown, timeoutMs: number): Promise<Record<string, unknown>> {
   const reply = await fetch(`${FORGE_SITE}${path}`, {
@@ -36,11 +30,15 @@ async function postToForge(path: string, body: unknown, timeoutMs: number): Prom
   return parsed;
 }
 
-/** The Forge site's shared-report link: the slim report as base64url JSON in ?d=. */
-function reportUrl(result: Record<string, unknown>): string {
-  const { headline, summary, summaryBullets, method, systems } = result;
-  const encoded = Buffer.from(JSON.stringify({ headline, summary, summaryBullets, method, systems }), "utf-8").toString("base64url");
-  return `${FORGE_SITE}/r?d=${encoded}`;
+/** The report link for a call: the site's engine run on their words, then pinned to the screen's reading. */
+async function buildReportUrl(context: SynthesisContext): Promise<string> {
+  const text = storyText(context);
+  const { extracted } = await postToForge("/api/enneagram-extract", { text }, EXTRACT_TIMEOUT_MS);
+  const phase = enginePhase(extracted, context);
+  const { result } = await postToForge("/api/unified-score", { method: "phases", phases: [phase] }, SCORE_TIMEOUT_MS);
+  const engine = readSiteReport(result);
+  if (!engine) throw new Error("unified-score sent no result");
+  return reportUrl(pinReport(engine, context.profile, context.goals));
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -68,18 +66,17 @@ export async function POST(request: Request): Promise<Response> {
   const denied = tokenError(token, stored?.sessionToken ?? null);
   if (denied || !stored) return denied ?? apiError("not_found", 404);
   // After a crisis no reading is given, and that includes this one.
-  if (context.crisis) return apiError("forbidden", 403);
+  if (context.crisis || context.profile?.status === "withheld_for_safety") return apiError("forbidden", 403);
   if (cached) return json<ReportResponse>({ url: cached });
 
-  const text = storyText(context);
-  if (text.length < MIN_TEXT_CHARS) return apiError("report_failed", 422);
+  // The full report is the reading from the call, read wider: with no reading, or when Veronica
+  // said there wasn't enough to go on, there is nothing for it to agree with.
+  if (!context.profile || context.profile.status === "insufficient") return apiError("report_failed", 422);
+  if (storyText(context).length < MIN_TEXT_CHARS) return apiError("report_failed", 422);
 
   let url: string;
   try {
-    const { extracted } = await postToForge("/api/enneagram-extract", { text }, EXTRACT_TIMEOUT_MS);
-    const { result } = await postToForge("/api/unified-score", { method: "phases", phases: [extracted] }, SCORE_TIMEOUT_MS);
-    if (!isRecord(result)) throw new Error("unified-score sent no result");
-    url = reportUrl(result);
+    url = await buildReportUrl(context);
   } catch (error) {
     logFailure("report: Forge site", error);
     return apiError("report_failed", 502);
