@@ -6,8 +6,8 @@ import { CrisisCard } from "@/app/components/crisis-card";
 import { FullReport } from "@/app/components/full-report";
 import { GoalChips } from "@/app/components/goal-chips";
 import { NoReading } from "@/app/components/no-reading";
-import { Rundown } from "@/app/components/rundown";
-import type { SessionRef } from "@/lib/client/api";
+import { GoalCard } from "@/app/components/goal-card";
+import type { ReportBuild } from "@/app/hooks/use-full-report";
 import type { CallEnding } from "@/lib/client/forge-state";
 import type { Goal, Profile } from "@/lib/types";
 
@@ -16,7 +16,6 @@ const WAIT_IF_SYNTHESIZING_MS = 30_000;
 const WAIT_OTHERWISE_MS = 8_000;
 
 interface ResultScreenProps {
-  session: SessionRef;
   profile: Profile | null;
   goals: Goal[];
   crisis: boolean;
@@ -24,23 +23,26 @@ interface ResultScreenProps {
   noReading: boolean;
   ended: { at: number; by: CallEnding };
   crisisLine: string;
+  report: ReportBuild;
+  onRetryReport: () => void;
 }
 
-/** What the page shows: the rundown, the honest no-reading note, or the crisis card. */
+/** What the page shows under the report: the goal cards, the honest no-reading note, or the crisis card. */
 function resultBody(props: ResultScreenProps, waitOver: boolean): ReactNode {
   const { profile, goals, crisis, synthesizing, noReading, ended } = props;
   if (crisis || profile?.status === "withheld_for_safety") return <CrisisCard line={props.crisisLine} />;
   if (profile) {
     // Under F05 the profile has no goal cards, yet Veronica just said the goals are on screen: list them.
+    if (profile.goals.length === 0) return goals.length > 0 ? <GoalChips goals={goals} afterCall /> : null;
     return (
-      <>
-        <Rundown profile={profile} />
-        {profile.goals.length === 0 && goals.length > 0 && (
-          <div className="mt-20">
-            <GoalChips goals={goals} afterCall />
-          </div>
-        )}
-      </>
+      <section>
+        <h2 className="stamp">For your goals</h2>
+        <div className="mt-6 space-y-5">
+          {profile.goals.map((goal) => (
+            <GoalCard key={goal.goal_id} goal={goal} />
+          ))}
+        </div>
+      </section>
     );
   }
   if (ended.by === "never_connected" || noReading || waitOver) return <NoReading goals={goals} endedBy={ended.by} />;
@@ -79,7 +81,7 @@ export function ResultScreen(props: ResultScreenProps) {
 
   return (
     <ResultLayout
-      report={!crisis && profile?.status !== "withheld_for_safety" ? <FullReport session={props.session} /> : null}
+      report={!crisis && profile && profile.status !== "withheld_for_safety" ? <FullReport build={props.report} onRetry={props.onRetryReport} /> : null}
       body={resultBody(props, waitOver)}
       actions={
         <>

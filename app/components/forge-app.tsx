@@ -5,6 +5,7 @@ import { CallScreen } from "@/app/components/call-screen";
 import { ConsentScreen } from "@/app/components/consent-screen";
 import { CVIProvider } from "@/app/components/cvi/components/cvi-provider";
 import { ResultScreen } from "@/app/components/result-screen";
+import { useFullReport } from "@/app/hooks/use-full-report";
 import { useSessionPoll } from "@/app/hooks/use-session-poll";
 import { endSession, sendEndBeacon, worthRetrying, type SessionRef } from "@/lib/client/api";
 import { forgeReducer, initialForgeState, type ActiveSession, type CallEnding, type Screen } from "@/lib/client/forge-state";
@@ -49,6 +50,9 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
   const profile = view?.profile ?? null;
   const goals = mergeGoals(view?.goals ?? [], state.goals);
   const crisis = state.crisis || Boolean(view?.crisis);
+  // The full report starts as soon as a reading exists, so it is mostly built by the time the call ends.
+  const readingReady = !crisis && (profile?.status === "complete" || profile?.status === "partial");
+  const report = useFullReport(session, readingReady);
 
   const start = useCallback((next: ActiveSession) => dispatch({ type: "started", session: next }), []);
 
@@ -100,7 +104,6 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
       )}
       {screen === "result" && session && ended && (
         <ResultScreen
-          session={session}
           profile={profile}
           goals={goals}
           crisis={crisis}
@@ -108,6 +111,8 @@ export function ForgeApp({ crisisLine, arc }: ForgeAppProps) {
           noReading={state.noReading}
           ended={ended}
           crisisLine={crisisLine}
+          report={report.build}
+          onRetryReport={report.retry}
         />
       )}
     </CVIProvider>
