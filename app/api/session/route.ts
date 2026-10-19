@@ -2,7 +2,7 @@
 // pipelined store read checked against the session token.
 
 import { setTimeout as pause } from "node:timers/promises";
-import { cleanFirstName, crisisLineFor } from "@/lib/safety";
+import { cleanFirstName, crisisLineFor, firstNameProblem } from "@/lib/safety";
 import { newSessionToken } from "@/lib/server/auth";
 import { isRecord } from "@/lib/guards";
 import { apiError, authorizedSession, isConversationId, json, logFailure, openStore, readJsonBody } from "@/lib/server/http";
@@ -31,6 +31,8 @@ export async function POST(request: Request): Promise<Response> {
 
   // Everything that can fail without spending minutes comes before the create.
   if (body.consent !== true) return apiError("consent_required", 400);
+  // The same rule the form runs; a name that got past it is a bad request, not something to clean quietly.
+  if (typeof body.firstName === "string" && firstNameProblem(body.firstName)) return apiError("bad_request", 400);
 
   let palId: string;
   try {

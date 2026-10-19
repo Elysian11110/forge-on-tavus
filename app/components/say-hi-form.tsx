@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { createSession, withRetries, type RouteReply } from "@/lib/client/api";
+import { NAME_MAX_CHARS, firstNameProblem } from "@/lib/safety";
 import { checkDevices, type MicProblem } from "@/lib/client/devices";
 import type { ActiveSession } from "@/lib/client/forge-state";
 import type { CreateSessionResponse } from "@/lib/types";
@@ -39,7 +40,8 @@ export function SayHiForm({ onStarted }: { onStarted: (session: ActiveSession) =
   const [phase, setPhase] = useState<Phase>("idle");
   const [problem, setProblem] = useState<string | null>(null);
 
-  const ready = consent && phase === "idle";
+  const nameProblem = firstNameProblem(firstName);
+  const ready = consent && phase === "idle" && nameProblem === null;
 
   async function sayHi(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,6 +70,7 @@ export function SayHiForm({ onStarted }: { onStarted: (session: ActiveSession) =
   return (
     <SayHiView
       firstName={firstName}
+      nameProblem={nameProblem}
       consent={consent}
       phase={phase}
       ready={ready}
@@ -81,6 +84,7 @@ export function SayHiForm({ onStarted }: { onStarted: (session: ActiveSession) =
 
 interface SayHiViewProps {
   firstName: string;
+  nameProblem: string | null;
   consent: boolean;
   phase: Phase;
   ready: boolean;
@@ -115,11 +119,20 @@ function SayHiView(props: SayHiViewProps) {
           <input
             type="text"
             autoComplete="given-name"
-            maxLength={40}
+            autoCapitalize="words"
+            spellCheck={false}
+            maxLength={NAME_MAX_CHARS}
             value={props.firstName}
             onChange={(e) => props.onFirstName(e.target.value)}
+            aria-invalid={props.nameProblem !== null}
+            aria-describedby={props.nameProblem ? "first-name-problem" : undefined}
             className={INPUT_CLASS}
           />
+          {props.nameProblem && (
+            <span id="first-name-problem" className="type-label mt-2 block normal-case tracking-[0.04em] text-ember-hot">
+              {props.nameProblem}
+            </span>
+          )}
         </Field>
 
         <label className="flex cursor-pointer items-start gap-4">

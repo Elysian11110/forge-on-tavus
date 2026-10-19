@@ -6,8 +6,11 @@ const CRISIS_LINE_GB = "Samaritans, 116 123, free, any time";
 const CRISIS_LINE_US = "call or text 988";
 const CRISIS_LINE_ELSEWHERE = "findahelpline.com, which lists free lines where you are";
 
-// Longest word kept from a first name, in characters.
+// A first name is one or two words of letters, each at most this long; the form and the server
+// both run the same rule, so what the screen accepts is exactly what reaches the model.
 const NAME_WORD_MAX = 20;
+export const NAME_MAX_CHARS = NAME_WORD_MAX * 2 + 1;
+export const NAME_RULE = "Letters only, one or two words.";
 
 /** The crisis line for a country code from x-vercel-ip-country; everyone outside GB and the US gets the helpline directory. */
 export function crisisLineFor(country: string | null | undefined): string {
@@ -27,6 +30,17 @@ export function cleanFirstName(raw: unknown): string | null {
     .slice(0, 2)
     .map(capitalise);
   return words.length > 0 ? words.join(" ") : null;
+}
+
+/** Why a typed name is not usable as it stands, or null when it is fine (empty counts as fine: the name is optional). */
+export function firstNameProblem(raw: string): string | null {
+  const typed = raw.trim();
+  if (!typed) return null;
+  const words = typed.split(/\s+/);
+  if (words.length > 2) return NAME_RULE;
+  if (words.some((word) => !/^[\p{L}\p{M}]+$/u.test(word))) return NAME_RULE;
+  if (words.some((word) => Array.from(word).length > NAME_WORD_MAX)) return "That's a long one. Up to 20 letters a word.";
+  return null;
 }
 
 function capitalise(word: string): string {

@@ -3,7 +3,7 @@ import { buildCreateBody } from "@/lib/tavus";
 import { readSwitches, type Switches } from "@/lib/switches";
 
 const env = (vars: Record<string, string>) => vars as NodeJS.ProcessEnv;
-import { cleanFirstName } from "@/lib/safety";
+import { NAME_RULE, cleanFirstName, firstNameProblem } from "@/lib/safety";
 
 const switches = (arc: 5 | 30): Switches => ({ arc, requireAuth: true, euPolicy: false }) as Switches;
 const body = (arc: 5 | 30) =>
@@ -36,5 +36,19 @@ describe("the switches and the name cleaner", () => {
     expect(cleanFirstName("<script>")).toBe("Script");
     expect(cleanFirstName(42)).toBeNull();
     expect(cleanFirstName("")).toBeNull();
+  });
+});
+
+describe("the first-name rule the form and the server share", () => {
+  it("accepts one or two words of letters and nothing else", () => {
+    expect(firstNameProblem("")).toBeNull();
+    expect(firstNameProblem("  Zineb ")).toBeNull();
+    expect(firstNameProblem("Mary Jane")).toBeNull();
+    expect(firstNameProblem("Zoë")).toBeNull();
+    expect(firstNameProblem("Mary-Jane")).toBe(NAME_RULE);
+    expect(firstNameProblem("One Two Three")).toBe(NAME_RULE);
+    expect(firstNameProblem("Zee123")).toBe(NAME_RULE);
+    expect(firstNameProblem("<script>")).toBe(NAME_RULE);
+    expect(firstNameProblem("a".repeat(21))).toMatch(/long one/);
   });
 });
